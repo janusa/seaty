@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/guests")
-class Controller {
+class Controller(
+    private val repository: Repository
+) {
 
     @GetMapping()
     fun getGuests(
@@ -17,6 +19,6 @@ class Controller {
             message = "Name must be at least 3 characters"
         ) name: String
     ): List<String> {
-        return listOf("A", "B", "C")
+        return repository.findGuests(name).map { it.toString() }
     }
 }
