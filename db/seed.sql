@@ -1,3 +1,7 @@
+-- foreign_keys is a per-connection pragma that defaults to OFF, so it must be enabled in *this*
+-- session (separate from the one that ran schema.sql) for the inserts below to be FK-checked.
+PRAGMA foreign_keys = ON;
+
 INSERT INTO guest (name)
 VALUES ('Alice'),
        ('Bob'),
@@ -8,12 +12,12 @@ VALUES ('Alice'),
        ('Charles'),
        ('Charlotte');
 
-INSERT INTO dining_table (table_number, seat_count)
-VALUES ('1', 6),
-       ('2', 8),
-       ('3', 6),
-       ('4', 4),
-       ('5', 6);
+INSERT INTO dining_table (table_number)
+VALUES (1),
+       (2),
+       (3),
+       (4),
+       (5);
 
 INSERT INTO seat(seat_number, table_id)
 VALUES (1, 1),
