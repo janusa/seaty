@@ -62,10 +62,52 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
+            <!-- Mockito arrives transitively through this starter (via spring-boot-starter-test)
+                 and is Spring's default mocking engine. This project mocks exclusively with MockK,
+                 so we evict Mockito. Two reasons: (1) it drops jars we never use; (2) Spring's
+                 MockitoTestExecutionListener otherwise eagerly initialises Mockito on the first
+                 test context, which dynamically self-attaches a ByteBuddy agent and prints a JDK
+                 startup warning. Trade-off: @MockitoBean / @MockitoSpyBean are no longer available
+                 - substitute a MockK mock via @TestConfiguration (web slices) or @TestBean. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-junit-jupiter</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-jvm</artifactId>
+            <version>1.14.6</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- MockK creates mocks using a ByteBuddy agent, which by default it attaches to the
+             running JVM dynamically. Modern JDKs warn about dynamic agent loading and will forbid
+             it in a future release. We already get this jar transitively (via mockk-agent-jvm);
+             declaring it explicitly here (version managed by the Boot BOM) lets the Surefire
+             plugin below resolve its path and load it up-front with -javaagent, so MockK finds an
+             already-attached agent and never self-attaches. -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- HTML parser for asserting on the served static pages (structure, links). Not managed
+             by the Boot BOM, so the version is pinned here. -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.18.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -82,10 +124,61 @@
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+            <!-- Expose the canonical schema/seed SQL on the test classpath (single source of
+                 truth) so tests can build a temp SQLite DB via ClassPathResource("db/..."). -->
+            <testResource>
+                <directory>${project.basedir}/db</directory>
+                <targetPath>db</targetPath>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- The 'properties' goal (bound to the 'initialize' phase) defines one Maven property
+                 per resolved dependency, named "groupId:artifactId:type", whose value is that
+                 artifact's absolute path in the local repo. We use it solely to obtain
+                 ${net.bytebuddy:byte-buddy-agent:jar} for the -javaagent argument below, so the
+                 path and version never have to be hardcoded. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- The forked test JVM runs with the args in argLine below. Each one silences a
+                 specific JDK 25 startup warning while keeping MockK fully working; the result is a
+                 clean, warning-free test run. All four use JDK 24+ syntax, which is fine because
+                 this project targets Java 25. argLine cannot hold inline comments, so the per-flag
+                 rationale is documented here:
+                   * -javaagent:(byte-buddy-agent jar) - loads MockK's ByteBuddy agent at JVM
+                     startup so MockK does not attach it dynamically (the JDK warns about, and will
+                     eventually forbid, dynamic agent loading). Path comes from the property set by
+                     the maven-dependency-plugin above.
+                   * -Xshare:off - disables class-data sharing. CDS prints a warning when an agent
+                     appends to the bootstrap classpath, which the agent above does.
+                   * enable-native-access=ALL-UNNAMED - sqlite-jdbc loads its native library via
+                     System.load(); granting native access suppresses the JDK's native-access
+                     warning for the unnamed module.
+                   * sun-misc-unsafe-memory-access=allow - ByteBuddy probes the deprecated
+                     sun.misc.Unsafe.objectFieldOffset; this permits the call without its
+                     "terminally deprecated" warning. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Xshare:off --enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
