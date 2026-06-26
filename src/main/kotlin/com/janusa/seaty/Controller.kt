@@ -18,7 +18,7 @@ class Controller(
             min = 3,
             message = "Name must be at least 3 characters"
         ) name: String
-    ): List<String> {
-        return repository.findGuests(name).map { it.toString() }
+    ): List<Guest> {
+        return repository.findGuests(name)
     }
 }
