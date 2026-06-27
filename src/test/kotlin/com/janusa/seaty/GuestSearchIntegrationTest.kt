@@ -18,7 +18,15 @@ class GuestSearchIntegrationTest : AbstractWebIntegrationTest() {
             .expectStatus()
             .isOk()
             .expectBody()
-            .json("""["Guest(id=1, name=Alice)"]""", JsonCompareMode.LENIENT)
+            .json(
+                """
+                [
+                  {"id":6,"name":"Ali","seatNumber":6,"tableNumber":2},
+                  {"id":1,"name":"Alice","seatNumber":3,"tableNumber":2}
+                ]
+                """.trimIndent(),
+                JsonCompareMode.LENIENT,
+            )
     }
 
     @Test

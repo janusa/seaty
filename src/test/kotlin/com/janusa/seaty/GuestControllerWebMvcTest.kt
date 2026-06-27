@@ -38,7 +38,7 @@ class GuestControllerWebMvcTest {
 
     @Test
     fun `valid name returns the matching guests as a json array`() {
-        every { repository.findGuests("Ali") } returns listOf(Guest(1, "Alice"))
+        every { repository.findGuests("Ali") } returns listOf(Guest(1, "Alice", 3, 2))
 
         client
             .get()
@@ -47,7 +47,10 @@ class GuestControllerWebMvcTest {
             .expectStatus()
             .isOk()
             .expectBody()
-            .json("""["Guest(id=1, name=Alice)"]""", JsonCompareMode.LENIENT)
+            .json(
+                """[{"id":1,"name":"Alice","seatNumber":3,"tableNumber":2}]""",
+                JsonCompareMode.LENIENT,
+            )
     }
 
     @Test
