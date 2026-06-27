@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Kotlin formatting is enforced by ktlint (via the Spotless Maven plugin).
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+max_line_length = 120
+# ktlint already exempts @Test functions from camelCase naming; do the same for ArchUnit's @ArchTest
+# so architecture rules can keep the codebase's backtick `descriptive test name` convention.
+ktlint_function_naming_ignore_when_annotated_with = ArchTest
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

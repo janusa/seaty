@@ -18,7 +18,6 @@ import org.sqlite.JDBC
  * application.properties) must reject writes.
  */
 class ReadOnlyDatabaseIntegrationTest : AbstractIntegrationTest() {
-
     @Autowired
     private lateinit var jdbcClient: JdbcClient
 
@@ -26,26 +25,28 @@ class ReadOnlyDatabaseIntegrationTest : AbstractIntegrationTest() {
     fun `writes through the application datasource are rejected`() {
         assertThatThrownBy {
             jdbcClient.sql("INSERT INTO guest(name) VALUES ('Mallory')").update()
-        }
-            .isInstanceOf(DataAccessException::class.java)
+        }.isInstanceOf(DataAccessException::class.java)
             .hasMessageContaining("readonly")
     }
 
     @Test
     fun `read-only is enforced by config, not file permissions`() {
         // The same kind of SQLite file, opened with a plain writable URL (no mode=ro, no
-        // PRAGMA query_only), accepts writes — so the rejection above is configuration.
-        val writable = JdbcClient.create(
-            SimpleDriverDataSource(JDBC(), "jdbc:sqlite:${TestDatabase.createWritable()}"),
-        )
+        // PRAGMA query_only), accepts writes - so the rejection above is configuration.
+        val writable =
+            JdbcClient.create(
+                SimpleDriverDataSource(JDBC(), "jdbc:sqlite:${TestDatabase.createWritable()}"),
+            )
 
         assertThatCode {
             writable.sql("INSERT INTO guest(name) VALUES ('Mallory')").update()
         }.doesNotThrowAnyException()
 
-        val count = writable.sql("SELECT count(*) FROM guest WHERE name = 'Mallory'")
-            .query(Int::class.javaObjectType)
-            .single()
+        val count =
+            writable
+                .sql("SELECT count(*) FROM guest WHERE name = 'Mallory'")
+                .query(Int::class.javaObjectType)
+                .single()
         assertThat(count).isEqualTo(1)
     }
 }

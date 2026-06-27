@@ -67,8 +67,7 @@
                  so we evict Mockito. Two reasons: (1) it drops jars we never use; (2) Spring's
                  MockitoTestExecutionListener otherwise eagerly initialises Mockito on the first
                  test context, which dynamically self-attaches a ByteBuddy agent and prints a JDK
-                 startup warning. Trade-off: @MockitoBean / @MockitoSpyBean are no longer available
-                 - substitute a MockK mock via @TestConfiguration (web slices) or @TestBean. -->
+                 startup warning. -->
             <exclusions>
                 <exclusion>
                     <groupId>org.mockito</groupId>
@@ -140,6 +139,37 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Build-hygiene gate. The 'enforce' goal binds to the 'validate' phase (runs first on
+                 every build) and FAILS the build if an invariant is violated. The rules pin this
+                 project's deliberately bleeding-edge toolchain so a contributor - or future us -
+                 cannot silently build on an older JDK/Maven and get different behaviour:
+                   * requireJavaVersion [25,26) - this project compiles to and depends on Java 25.
+                   * requireMavenVersion [3.9.16,) - the version the ./mvnw wrapper ships.
+                   * banDuplicatePomDependencyVersions - catches a dependency declared twice. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-environment</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[25,26)</version>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.9.16,)</version>
+                                </requireMavenVersion>
+                                <banDuplicatePomDependencyVersions/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- The 'properties' goal (bound to the 'initialize' phase) defines one Maven property
                  per resolved dependency, named "groupId:artifactId:type", whose value is that
                  artifact's absolute path in the local repo. We use it solely to obtain
@@ -177,7 +207,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Xshare:off --enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow</argLine>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Xshare:off
+                        --enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -199,6 +231,31 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <!-- Kotlin formatter. Spotless drives the ktlint engine (pinned, so engine upgrades are
+                 deliberate) against the project's .editorconfig. The 'check' goal binds to 'verify'
+                 and FAILS the build on any formatting drift; run `./mvnw spotless:apply` locally to
+                 auto-fix. -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <kotlin>
+                        <ktlint>
+                            <version>1.8.0</version>
+                        </ktlint>
+                    </kotlin>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

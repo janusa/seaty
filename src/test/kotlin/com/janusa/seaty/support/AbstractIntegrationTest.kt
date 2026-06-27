@@ -8,7 +8,7 @@ import org.springframework.test.context.DynamicPropertySource
  * Base class for full-context integration tests.
  *
  * Boots the real application but points the datasource at a seeded temp SQLite file
- * ([TestDatabase]) instead of `./data/app.db`. Only `spring.datasource.url` is overridden —
+ * ([TestDatabase]) instead of `./data/app.db`. Only `spring.datasource.url` is overridden -
  * everything else (the `PRAGMA query_only=ON` Hikari init, problemdetails, messages) is
  * inherited from the real `application.properties`, so the datasource is read-only exactly
  * like production.
@@ -18,7 +18,6 @@ import org.springframework.test.context.DynamicPropertySource
  */
 @SpringBootTest
 abstract class AbstractIntegrationTest {
-
     companion object {
         @JvmStatic
         @DynamicPropertySource

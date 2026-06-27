@@ -11,28 +11,38 @@ import org.springframework.http.MediaType
  * MessageSource is guaranteed to be wired.
  */
 class ProblemDetailIntegrationTest : AbstractWebIntegrationTest() {
-
     @Test
     fun `validation failure is a problem detail with the custom message`() {
-        restClient.get().uri("/api/guests?name=ab")
+        restClient
+            .get()
+            .uri("/api/guests?name=ab")
             .exchange()
-            .expectStatus().isBadRequest()
-            .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .expectStatus()
+            .isBadRequest()
+            .expectHeader()
+            .contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
             .expectBody()
             // RFC 9457 members. ("type" defaults to "about:blank", which Spring omits.)
-            .jsonPath("$.title").exists()
-            .jsonPath("$.status").isEqualTo(400)
-            .jsonPath("$.detail").value(String::class.java) { detail ->
+            .jsonPath("$.title")
+            .exists()
+            .jsonPath("$.status")
+            .isEqualTo(400)
+            .jsonPath("$.detail")
+            .value(String::class.java) { detail ->
                 assertThat(detail).contains("Invalid request parameters")
-            }
-            .jsonPath("$.instance").isEqualTo("/api/guests")
+            }.jsonPath("$.instance")
+            .isEqualTo("/api/guests")
     }
 
     @Test
     fun `missing required parameter is also a problem detail`() {
-        restClient.get().uri("/api/guests")
+        restClient
+            .get()
+            .uri("/api/guests")
             .exchange()
-            .expectStatus().isBadRequest()
-            .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .expectStatus()
+            .isBadRequest()
+            .expectHeader()
+            .contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
     }
 }

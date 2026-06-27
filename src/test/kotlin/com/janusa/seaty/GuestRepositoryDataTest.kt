@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired
  * prefix matching, ordering and row mapping.
  */
 class GuestRepositoryDataTest : AbstractIntegrationTest() {
-
     @Autowired
     private lateinit var repository: Repository
 

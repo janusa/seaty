@@ -8,12 +8,11 @@ import java.nio.file.Files
 
 /**
  * Builds embedded SQLite databases for tests from the canonical [db/schema.sql] and
- * [db/seed.sql] (mapped onto the test classpath in pom.xml — single source of truth).
+ * [db/seed.sql] (mapped onto the test classpath in pom.xml - single source of truth).
  *
  * No Testcontainers: SQLite is a file, so each database is just a temp file.
  */
 object TestDatabase {
-
     /**
      * Path to a single shared, seeded database, built once on first access. Integration
      * tests read from it through a read-only datasource, so it never gets mutated and can
