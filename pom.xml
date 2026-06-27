@@ -109,6 +109,16 @@
             <version>1.18.3</version>
             <scope>test</scope>
         </dependency>
+        <!-- Architecture tests: express the Controller -> Repository layering as
+             plain JUnit5 tests. ArchUnit analyses compiled bytecode, so it is language-agnostic
+             (the Kotlin/K2 version is irrelevant) and needs no Maven plugin - the @ArchTest classes
+             run in the normal test phase under Surefire. -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>1.4.2</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
