@@ -1,5 +1,6 @@
 package com.janusa.seaty
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
@@ -11,12 +12,14 @@ import java.net.URI
 import java.time.Duration
 
 @RestController
-class AuthController {
+class AuthController(
+    @Value("\${auth.secret}") val secret: String
+) {
     @GetMapping("/auth")
     fun authenticate(
-        @RequestParam secret: String,
+        @RequestParam(name = "secret") providedSecret: String,
     ): ResponseEntity<Void> =
-        if (secret != "123") {
+        if (providedSecret != secret) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         } else {
             val cookie =

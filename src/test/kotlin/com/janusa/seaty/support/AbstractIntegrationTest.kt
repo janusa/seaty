@@ -23,6 +23,7 @@ abstract class AbstractIntegrationTest {
         @DynamicPropertySource
         fun datasourceProperties(registry: DynamicPropertyRegistry) {
             registry.add("spring.datasource.url") { TestDatabase.readOnlyUrl }
+            registry.add("auth.secret") { "123" }
         }
     }
 }
