@@ -13,24 +13,24 @@ import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.web.context.WebApplicationContext
 
 /**
- * Web-slice test of [Controller] - loads only the MVC layer (no datasource). This is the
+ * Web-slice test of [GuestController] - loads only the MVC layer (no datasource). This is the
  * "web seam": fast HTTP tests with the repository replaced by a MockK mock. The mock is
  * supplied through a nested [TestConfiguration] because the slice does not register the real
- * [Repository] bean, so there is nothing to override - it must be created.
+ * [GuestRepository] bean, so there is nothing to override - it must be created.
  */
-@WebMvcTest(Controller::class)
+@WebMvcTest(GuestController::class)
 class GuestControllerWebMvcTest {
     @TestConfiguration
     class Mocks {
         @Bean
-        fun repository(): Repository = mockk()
+        fun repository(): GuestRepository = mockk()
     }
 
     @Autowired
     private lateinit var webContext: WebApplicationContext
 
     @Autowired
-    private lateinit var repository: Repository
+    private lateinit var guestRepository: GuestRepository
 
     private val client: RestTestClient by lazy {
         RestTestClient.bindToApplicationContext(webContext).build()
@@ -38,7 +38,7 @@ class GuestControllerWebMvcTest {
 
     @Test
     fun `valid name returns the matching guests as a json array`() {
-        every { repository.findGuests("Ali") } returns listOf(Guest(1, "Alice", 3, 2))
+        every { guestRepository.findGuests("Ali") } returns listOf(Guest(1, "Alice", 3, 2))
 
         client
             .get()

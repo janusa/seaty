@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/guests")
-class Controller(
-    private val repository: Repository,
+class GuestController(
+    private val guestRepository: GuestRepository,
 ) {
     @GetMapping()
     fun getGuests(
@@ -17,5 +17,5 @@ class Controller(
             min = 3,
             message = "Name must be at least 3 characters",
         ) name: String,
-    ): List<Guest> = repository.findGuests(name)
+    ): List<Guest> = guestRepository.findGuests(name)
 }

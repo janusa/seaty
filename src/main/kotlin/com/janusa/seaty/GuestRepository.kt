@@ -4,7 +4,7 @@ import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 
 @Repository
-class Repository(
+class GuestRepository(
     private val jdbcClient: JdbcClient,
 ) {
     fun findGuests(name: String): List<Guest> =
