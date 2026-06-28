@@ -18,7 +18,7 @@ import org.springframework.web.context.WebApplicationContext
  * supplied through a nested [TestConfiguration] because the slice does not register the real
  * [GuestRepository] bean, so there is nothing to override - it must be created.
  */
-@WebMvcTest(GuestController::class)
+@WebMvcTest(GuestController::class, properties = ["auth.secret=123"])
 class GuestControllerWebMvcTest {
     @TestConfiguration
     class Mocks {
@@ -33,7 +33,10 @@ class GuestControllerWebMvcTest {
     private lateinit var guestRepository: GuestRepository
 
     private val client: RestTestClient by lazy {
-        RestTestClient.bindToApplicationContext(webContext).build()
+        RestTestClient
+            .bindToApplicationContext(webContext)
+            .defaultCookie<RestTestClient.WebAppContextSetupBuilder>("session", "123")
+            .build()
     }
 
     @Test

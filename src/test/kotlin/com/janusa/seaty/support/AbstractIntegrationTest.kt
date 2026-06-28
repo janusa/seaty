@@ -18,12 +18,14 @@ import org.springframework.test.context.DynamicPropertySource
  */
 @SpringBootTest
 abstract class AbstractIntegrationTest {
-    companion object {
+    protected companion object {
+        const val TEST_SECRET = "123"
+
         @JvmStatic
         @DynamicPropertySource
         fun datasourceProperties(registry: DynamicPropertyRegistry) {
             registry.add("spring.datasource.url") { TestDatabase.readOnlyUrl }
-            registry.add("auth.secret") { "123" }
+            registry.add("auth.secret") { TEST_SECRET }
         }
     }
 }

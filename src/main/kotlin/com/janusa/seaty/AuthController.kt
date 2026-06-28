@@ -13,13 +13,13 @@ import java.time.Duration
 
 @RestController
 class AuthController(
-    @Value("\${auth.secret}") val secret: String
+    @Value("\${auth.secret}") private val secret: String,
 ) {
     @GetMapping("/auth")
     fun authenticate(
         @RequestParam(name = "secret") providedSecret: String,
     ): ResponseEntity<Void> =
-        if (providedSecret != secret) {
+        if (!Utils.constantTimeEquals(providedSecret, secret)) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         } else {
             val cookie =
