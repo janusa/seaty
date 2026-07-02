@@ -1,5 +1,8 @@
 package com.janusa.seaty
 
+import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -18,10 +21,13 @@ class AuthController(
     @GetMapping("/auth")
     fun authenticate(
         @RequestParam(name = "secret") providedSecret: String,
+        request: HttpServletRequest,
     ): ResponseEntity<Unit> =
         if (!Utils.constantTimeEquals(providedSecret, secret)) {
+            log.warn("Failed authentication attempt from {}", request.remoteAddr)
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         } else {
+            log.info("Authentication succeeded from {}, issuing session cookie", request.remoteAddr)
             val cookie =
                 ResponseCookie
                     .from("session", secret)
@@ -37,4 +43,8 @@ class AuthController(
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build()
         }
+
+    private companion object {
+        val log: Logger = LoggerFactory.getLogger(AuthController::class.java)
+    }
 }

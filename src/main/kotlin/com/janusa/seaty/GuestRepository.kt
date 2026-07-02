@@ -1,5 +1,7 @@
 package com.janusa.seaty
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 
@@ -7,19 +9,29 @@ import org.springframework.stereotype.Repository
 class GuestRepository(
     private val jdbcClient: JdbcClient,
 ) {
-    fun findGuests(name: String): List<Guest> =
-        jdbcClient
-            .sql(
-                """
-                SELECT g.id, g.name, s.seat_number, dt.table_number
-                FROM guest g
-                JOIN seating_assignment sa on sa.guest_id = g.id
-                JOIN seat s on s.id = sa.seat_id
-                JOIN dining_table dt on dt.id = s.table_id
-                WHERE name like :name ORDER BY name
-                """.trimIndent(),
-            ).param("name", "$name%")
-            .query(Guest::class.java)
-            .list()
-            .filterNotNull()
+    fun findGuests(name: String): List<Guest> {
+        val likePattern = "$name%"
+        log.debug("Querying guests with name like '{}'", likePattern)
+        val result =
+            jdbcClient
+                .sql(
+                    """
+                    SELECT g.id, g.name, s.seat_number, dt.table_number
+                    FROM guest g
+                    JOIN seating_assignment sa on sa.guest_id = g.id
+                    JOIN seat s on s.id = sa.seat_id
+                    JOIN dining_table dt on dt.id = s.table_id
+                    WHERE name like :name ORDER BY name
+                    """.trimIndent(),
+                ).param("name", likePattern)
+                .query(Guest::class.java)
+                .list()
+                .filterNotNull()
+        log.debug("Query for name like '{}' returned {} row(s)", likePattern, result.size)
+        return result
+    }
+
+    private companion object {
+        val log: Logger = LoggerFactory.getLogger(GuestRepository::class.java)
+    }
 }

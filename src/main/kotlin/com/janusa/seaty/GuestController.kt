@@ -1,6 +1,8 @@
 package com.janusa.seaty
 
 import jakarta.validation.constraints.Size
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -17,5 +19,14 @@ class GuestController(
             min = 3,
             message = "Name must be at least 3 characters",
         ) name: String,
-    ): List<Guest> = guestRepository.findGuests(name)
+    ): List<Guest> {
+        log.debug("Guest search requested with prefix='{}'", name)
+        val result = guestRepository.findGuests(name)
+        log.info("Guest search prefix='{}' returned {} match(es)", name, result.size)
+        return result
+    }
+
+    private companion object {
+        val log: Logger = LoggerFactory.getLogger(GuestController::class.java)
+    }
 }
