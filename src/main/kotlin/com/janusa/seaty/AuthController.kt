@@ -18,7 +18,7 @@ class AuthController(
     @GetMapping("/auth")
     fun authenticate(
         @RequestParam(name = "secret") providedSecret: String,
-    ): ResponseEntity<Void> =
+    ): ResponseEntity<Unit> =
         if (!Utils.constantTimeEquals(providedSecret, secret)) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         } else {

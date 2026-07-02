@@ -1,0 +1,33 @@
+# detekt configuration.
+#
+# The gate runs with --all-rules (every rule active, including those off by default) and
+# --analysis-mode full (type resolution), so this file's job is the inverse of a normal detekt config:
+# it turns OFF the rules whose findings are noise or that conflict with conventions owned elsewhere.
+# Layered on detekt's defaults via --build-upon-default-config.
+#
+# NOT enabled at all: the formatting / ktlint-wrapper ruleset (detekt-rules-ktlint-wrapper is kept off
+# the classpath) - it would duplicate the Spotless+ktlint gate.
+
+comments:
+  # We do not gate on KDoc. Requiring documentation on every public class/function/property is high
+  # noise for an app of this size; documentation is a review concern, not a build failure.
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+
+style:
+  # Formatting concerns owned by Spotless+ktlint (.editorconfig). Keeping them here would let detekt
+  # and ktlint fight over the same lines.
+  MultilineRawStringIndentation:
+    active: false
+  CascadingCallWrapping:
+    active: false
+
+potential-bugs:
+  # Fires on nearly every call to a multi-parameter function; too noisy to gate on. Argument-order
+  # safety for the security-sensitive comparison is covered by tests instead.
+  UnnamedParameterUse:
+    active: false

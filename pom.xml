@@ -194,6 +194,21 @@
                             <goal>properties</goal>
                         </goals>
                     </execution>
+                    <!-- Emit the project's compile classpath (dependency jars, path-separated) into the
+                         ${detekt.classpath} property so detekt can run in full type-resolution mode.
+                         Bound to process-classes so it is set before the detekt gate runs in 'verify'.
+                         For a standalone detekt run the phase must be included, e.g.
+                         `./mvnw process-classes antrun:run@detekt`. -->
+                    <execution>
+                        <id>detekt-classpath</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <outputProperty>detekt.classpath</outputProperty>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <!-- The forked test JVM runs with the args in argLine below. Each one silences a
@@ -266,6 +281,81 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- detekt static analysis gate. detekt ships NO Maven plugin, so we run its CLI
+                 (dev.detekt.cli.Main) the way the detekt docs prescribe: an Ant <java> task launched by
+                 maven-antrun-plugin, bound to 'verify' (alongside Spotless). Key attributes:
+                   * fork="true" - runs detekt in a SEPARATE JVM. detekt-cli bundles kotlin-compiler, so
+                     running it inside Maven's own JVM risks classloader clashes; forking isolates it.
+                   * failonerror="true" - a non-zero CLI exit (detekt found issues at/above the fail
+                     severity) FAILS the build, matching the Spotless/Enforcer/ArchUnit gates.
+                   * classpathref="maven.plugin.classpath" - the detekt-cli dependency declared below;
+                     Maven resolves its full transitive closure automatically (no manual -Xplugin path).
+                 Pinned to detekt 2.0.0-alpha.5 - the only line that parses Kotlin 2.4 - so the upgrade is
+                 deliberate (there is no RC yet). We deliberately do NOT add detekt-rules-ktlint-wrapper:
+                 that ruleset would duplicate the Spotless+ktlint formatting gate.
+                 Runs with all rules active (the "all-rules" arg) and full type resolution (the
+                 "analysis-mode full" arg, fed by the ${detekt.classpath} property built above), so
+                 type-aware rules like ForbiddenVoid actually run. Opinionated/overlapping rules are
+                 tuned off in detekt.yml. Run standalone with `./mvnw process-classes antrun:run@detekt`
+                 (the phase populates the classpath property). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>detekt</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="detekt">
+                                <java taskname="detekt" dir="${project.basedir}"
+                                      fork="true"
+                                      failonerror="true"
+                                      classname="dev.detekt.cli.Main"
+                                      classpathref="maven.plugin.classpath">
+                                    <!-- kotlin-compiler (via com.intellij ...Unsafe) probes the
+                                         terminally-deprecated sun.misc.Unsafe.objectFieldOffset; allow it
+                                         so the forked JVM stays warning-free, mirroring the Surefire
+                                         argLine above. -->
+                                    <jvmarg value="--sun-misc-unsafe-memory-access=allow"/>
+                                    <arg value="--input"/>
+                                    <arg value="${project.basedir}/src/main/kotlin"/>
+                                    <arg value="--config"/>
+                                    <arg value="${project.basedir}/detekt.yml"/>
+                                    <arg value="--build-upon-default-config"/>
+                                    <!-- Maximum strictness: activate every rule (incl. those off by
+                                         default) and run with full type resolution so type-aware rules
+                                         (ForbiddenVoid, SpreadOperator, many potential-bugs) actually run.
+                                         Noise from opinionated rules is tuned off in detekt.yml. The
+                                         classpath comes from the build-classpath execution above. -->
+                                    <arg value="--all-rules"/>
+                                    <arg value="--analysis-mode"/>
+                                    <arg value="full"/>
+                                    <arg value="--classpath"/>
+                                    <arg value="${detekt.classpath}"/>
+                                    <!-- detekt 2.0 report ids: sarif|html|markdown|checkstyle (there is
+                                         no 'xml' id). sarif = machine-readable for CI ingestion,
+                                         html = human-readable. -->
+                                    <arg value="--report"/>
+                                    <arg value="sarif:${project.build.directory}/detekt/detekt.sarif"/>
+                                    <arg value="--report"/>
+                                    <arg value="html:${project.build.directory}/detekt/detekt.html"/>
+                                </java>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>dev.detekt</groupId>
+                        <artifactId>detekt-cli</artifactId>
+                        <version>2.0.0-alpha.5</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
