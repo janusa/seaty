@@ -15,8 +15,10 @@ class WebConfig(
         registry
             .addInterceptor(AuthInterceptor(secret))
             .addPathPatterns("/**")
-            .excludePathPatterns("/auth")
-        log.info("Registered AuthInterceptor for /** (excluding /auth)")
+            // The whole /error tree stays open: the error-dispatch page must render without
+            // re-triggering auth, and its flower images must load even on the unauthenticated 401 page.
+            .excludePathPatterns("/auth", "/error", "/error/**")
+        log.info("Registered AuthInterceptor for /** (excluding /auth and /error/**)")
     }
 
     private companion object {
