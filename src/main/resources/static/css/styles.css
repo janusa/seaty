@@ -1,3 +1,125 @@
-* {
-    font-family: Charmonman, sans-serif;
+:root {
+    --background-color: #F8F6F1;
+    --green: #6F8263;
+    --light-green: #A7B49A;
+    --main-font-color: #5D6D56;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 38px;
+}
+
+html, body {
+    margin: 0;
+}
+
+.page {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    font-family: Cormorant, serif;
+    background-color: var(--background-color);
+    color: var(--main-font-color);
+
+    background-image: url("/images/flower_bottom_left.png"),
+    url("/images/flower_bottom_right.png");
+
+    background-repeat: no-repeat,
+    no-repeat;
+
+    background-size: 40vh auto,
+    40vh auto;
+
+    background-position: left -290px bottom -190px,
+    right -210px bottom -470px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 10px 50px;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 200;
+}
+
+input,
+button,
+textarea {
+    font: inherit;
+}
+
+.search-container {
+    height: 110px;
+    border: 2px solid var(--main-font-color);
+    border-radius: 60px;
+    background: transparent;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+}
+
+.search-icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.search-info {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 200;
+    margin-bottom: clamp(120px, 20vh, 500px);
+}
+
+.search-info p {
+    max-width: 16ch;
+    margin: 0;
+}
+
+.flower {
+    height: 50vh;
+    max-height: 1500px;
+    width: auto;
+    opacity: .40;
+}
+
+.bottom-left {
+    position: absolute;
+    left: clamp(-220px, -14vw, -80px);
+    bottom: clamp(-120px, -8vh, -40px);
+}
+
+.bottom-right {
+    position: absolute;
+    right: 0;
+    bottom: 0;
 }
