@@ -1,0 +1,7 @@
+# Caddy reverse proxy for Seaty.
+# Caddy provisions and renews the Let's Encrypt certificate automatically, as long as
+# the domain's A record points at the droplet (164.92.222.230) AND ports 80+443 are
+# reachable by Let's Encrypt's validation servers (not just an IP allowlist).
+tharsagan.no {
+	reverse_proxy 127.0.0.1:8080
+}

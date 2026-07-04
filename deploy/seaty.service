@@ -1,0 +1,71 @@
+[Unit]
+Description=Seaty
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=appuser
+Group=appuser
+
+# Relative DB path in application.properties (./data/app.db) resolves against this dir,
+# so the SQLite file must live at /var/lib/seaty/data/app.db (matches ReadOnlyPaths below).
+WorkingDirectory=/var/lib/seaty
+
+EnvironmentFile=/etc/seaty/seaty.env
+Environment=SPRING_PROFILES_ACTIVE=prod
+Environment=LOG_PATH=/var/log/seaty
+# Only Caddy (local) should reach the app; bind to loopback, not 0.0.0.0.
+Environment=SERVER_ADDRESS=127.0.0.1
+
+# 512 MB droplet: cap the heap hard and use SerialGC (lowest footprint for a tiny heap).
+# --enable-native-access silences the JDK 25 warning from sqlite-jdbc's native load.
+ExecStart=/usr/bin/java -Xmx192m -XX:+UseSerialGC -Xss512k --enable-native-access=ALL-UNNAMED -jar /opt/seaty/seaty.jar
+Restart=on-failure
+RestartSec=5
+
+# Privilege drop
+NoNewPrivileges=yes
+# only cap needed: bind 80/443
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+# actually grant it to the process
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+RestrictSUIDSGID=yes
+LockPersonality=yes
+UMask=0077
+
+# Filesystem isolation.
+# systemd unit files do NOT support trailing inline comments — a '#' after a value is parsed as
+# part of the value, which silently DROPS the directive (e.g. ProtectSystem). Keep comments on
+# their own lines.
+# ProtectSystem=strict makes the entire filesystem read-only...
+ProtectSystem=strict
+ProtectHome=yes
+# ...except the read-only DB directory (still read-only to the app)...
+ReadOnlyPaths=/var/lib/seaty
+# ...and the prod rolling log dir, the one path the app must write.
+ReadWritePaths=/var/log/seaty
+PrivateTmp=yes
+PrivateDevices=yes
+
+# Kernel / host isolation
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# DoS blast radius (tuned for the 512 MB droplet)
+TasksMax=256
+MemoryMax=420M
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+# Oneshot that runs one deploy poll: check GitHub for a newer verified jar on main and,
+# if there is one, download + install it and restart seaty. Triggered by seaty-deploy.timer.
+# Runs as root (writes /opt/seaty/seaty.jar and restarts the service); the app itself still
+# drops to appuser via seaty.service's User=. Output goes to journald: journalctl -u seaty-deploy
+[Unit]
+Description=Seaty deploy poll (pull latest verified jar from CI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/opt/seaty/deploy-poll.sh

@@ -1,0 +1,12 @@
+# Fires the deploy poll shortly after boot and every 2 minutes thereafter. systemd will not
+# start a second run while the previous oneshot is still executing, so no extra locking is needed.
+[Unit]
+Description=Poll CI for a new Seaty build every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=seaty-deploy.service
+
+[Install]
+WantedBy=timers.target
