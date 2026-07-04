@@ -1,6 +1,7 @@
 package com.janusa.seaty
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -22,10 +23,13 @@ class AuthController(
     fun authenticate(
         @RequestParam(name = "secret") providedSecret: String,
         request: HttpServletRequest,
-    ): ResponseEntity<Unit> =
+        response: HttpServletResponse,
+    ): ResponseEntity<Unit>? =
         if (!Utils.constantTimeEquals(providedSecret, secret)) {
             log.warn("Failed authentication attempt from {}", request.remoteAddr)
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+            // sendError triggers the error dispatch so the custom 401-page renders.
+            response.sendError(HttpStatus.UNAUTHORIZED.value())
+            null
         } else {
             log.info("Authentication succeeded from {}, issuing session cookie", request.remoteAddr)
             val cookie =

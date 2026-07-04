@@ -1,0 +1,91 @@
+/*
+ * Shared styling for the flower error pages. Lives under /error (not /css) so it loads on the
+ * unauthenticated 401 page: the whole /error tree is excluded from the auth interceptor, while
+ * /css is gated. This is a separate look from the app's styles.css on purpose - an elegant serif
+ * rather than the app's handwritten font.
+ */
+:root {
+    --paper: #f7f4ec;
+    --ink: #42473b;
+    --muted: #8b9079;
+    --sage: #7c8a6b;
+    --line: #ddd9cb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 2.5rem 1.25rem;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+}
+
+.card {
+    width: 100%;
+    max-width: 30rem;
+    text-align: center;
+}
+
+.flower {
+    display: block;
+    width: 150px;
+    height: auto;
+    margin: 0 auto 1.4rem;
+}
+
+.status {
+    margin: 0 0 .9rem;
+    font-size: 3.4rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: .06em;
+    color: var(--sage);
+}
+
+h1 {
+    margin: 0 0 .65rem;
+    font-size: 1.45rem;
+    font-weight: 400;
+}
+
+p {
+    margin: 0 auto 1.6rem;
+    max-width: 24rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.rule {
+    width: 44px;
+    height: 1px;
+    margin: 0 auto 1.6rem;
+    border: 0;
+    background: var(--line);
+}
+
+.home {
+    display: inline-block;
+    font-size: .95rem;
+    color: var(--sage);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(124, 138, 107, .4);
+    transition: color .2s, border-color .2s;
+}
+
+.home:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+}
+
+@media (max-width: 400px) {
+    .status { font-size: 2.8rem; }
+}

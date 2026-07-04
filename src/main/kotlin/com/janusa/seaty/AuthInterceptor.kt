@@ -28,7 +28,8 @@ class AuthInterceptor(
             request.remoteAddr,
             reason,
         )
-        response.status = HttpStatus.UNAUTHORIZED.value()
+        // sendError (not a bare status) triggers the error dispatch so the custom error page renders.
+        response.sendError(HttpStatus.UNAUTHORIZED.value())
         return false
     }
 
