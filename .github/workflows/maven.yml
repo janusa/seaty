@@ -19,3 +19,11 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: ./mvnw -B verify --file pom.xml
+      - name: Publish jar for deployment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: seaty-jar
+          path: target/seaty-*.jar
+          if-no-files-found: error
+          retention-days: 7
