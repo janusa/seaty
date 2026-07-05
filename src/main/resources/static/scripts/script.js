@@ -9,6 +9,7 @@ const MAX_SEARCH_LENGTH = 80;
 
 searchInput.addEventListener("input", () => {
     clearTimeout(timeoutId);
+    persistQuery(searchInput.value);
 
     timeoutId = setTimeout(() => {
         searchGuests(searchInput.value);
@@ -19,8 +20,30 @@ searchInput.addEventListener("input", () => {
 searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
     clearTimeout(timeoutId);
+    persistQuery(searchInput.value);
     searchGuests(searchInput.value);
 });
+
+// Restore the previous search after a reload by reading it back from the URL.
+const initialQuery = new URLSearchParams(window.location.search).get("name");
+if (initialQuery) {
+    searchInput.value = initialQuery;
+    searchGuests(initialQuery);
+}
+
+// Keep the current search in the URL so it survives a page reload (and can be shared).
+function persistQuery(value) {
+    const params = new URLSearchParams(window.location.search);
+
+    if (value.trim().length === 0) {
+        params.delete("name");
+    } else {
+        params.set("name", value);
+    }
+
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
+}
 
 async function searchGuests(value) {
     const query = value.trim();
@@ -97,6 +120,7 @@ function renderList(guests) {
 // Picking one result fills the search bar with that name and blows the result up full-screen.
 function selectGuest(guest) {
     searchInput.value = guest.name;
+    persistQuery(guest.name);
     renderSingleGuest(guest);
 }
 
