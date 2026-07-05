@@ -187,7 +187,8 @@ textarea {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    margin-top: 1rem;
+    /* Match the gap below the search bar that the results list gets from a <ul>'s default 1em margin. */
+    margin-top: 1em;
     border: 1px solid var(--main-font-color);
     border-radius: 1.25rem;
     background-color: var(--background-color);
