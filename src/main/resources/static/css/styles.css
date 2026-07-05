@@ -173,6 +173,11 @@ textarea {
     align-items: stretch;
 }
 
+/* Drop the page's corner flowers in this view so only the card's own botanicals show. */
+.page:has(.search-result-container.single-view) {
+    background-image: none;
+}
+
 .single-guest {
     position: relative;
     flex: 1;
