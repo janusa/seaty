@@ -67,10 +67,9 @@ textarea {
 
 .search-container {
     height: 3rem;
-    border: 2px solid var(--main-font-color);
+    border: 1px solid var(--main-font-color);
     border-radius: 1.5rem;
     border-radius: 1.5rem;
-    background: transparent;
     padding: 0 1rem;
     display: flex;
     flex-direction: row;
@@ -90,20 +89,53 @@ textarea {
     margin-right: 0.5rem;
 }
 
-.search-info {
+.search-result-container {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
     text-align: center;
     font-size: 2rem;
     font-weight: 200;
     margin-bottom: clamp(120px, 20vh, 500px);
 }
 
-.search-info p {
+.search-result-container > p {
     max-width: 16ch;
     margin: 0;
+    align-self: center;
+}
+
+.search-results-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.search-result {
+    min-height: 4rem;
+    padding: 1rem;
+    border: 1px solid var(--main-font-color);
+    border-radius: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+}
+
+.search-result h2 {
+    margin-bottom: 0.5rem;
+    text-align: left;
+    margin-top: 0;
+    font-size: 1.5rem;
+    font-weight: 200;
+}
+
+.search-result p {
+    margin: 0;
+    text-align: left;
+    font-size: 1rem;
 }
 
 .flower {
