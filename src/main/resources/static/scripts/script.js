@@ -17,7 +17,8 @@ searchInput.addEventListener("input", () => {
 async function searchGuests(value) {
     const query = value.trim();
 
-    if (query.length < 3) {
+    if (query.length < MIN_SEARCH_LENGTH) {
+        resultsContainer.innerHTML = "<p>Start typing to find your seat!</p>";
         return;
     }
 
