@@ -1,3 +1,4 @@
+const searchForm = document.querySelector("form[role='search']");
 const searchInput = document.querySelector("#guest-search");
 const resultsContainer = document.querySelector("#search-result-container");
 
@@ -12,6 +13,13 @@ searchInput.addEventListener("input", () => {
     timeoutId = setTimeout(() => {
         searchGuests(searchInput.value);
     }, 200);
+});
+
+// Pressing Enter would otherwise submit the form and reload the page; search in place instead.
+searchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    clearTimeout(timeoutId);
+    searchGuests(searchInput.value);
 });
 
 async function searchGuests(value) {
