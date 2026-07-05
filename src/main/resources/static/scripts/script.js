@@ -26,7 +26,7 @@ async function searchGuests(value) {
     const query = value.trim();
 
     if (query.length < MIN_SEARCH_LENGTH) {
-        resultsContainer.innerHTML = "<p>Start typing to find your seat!</p>";
+        showMessage("Start typing to find your seat!");
         return;
     }
 
@@ -42,30 +42,106 @@ async function searchGuests(value) {
     } catch (error) {
         console.error(error);
     }
+}
 
-    function renderGuests(guests) {
-        if (guests.length === 0) {
-            resultsContainer.innerHTML = "<p>No guests found with this name.</p>";
-            return;
-        }
-
-        const list = document.createElement("ul");
-        list.className = "search-results-list";
-
-        for (const guest of guests) {
-            const item = document.createElement("li");
-            item.className = "search-result";
-
-            const name = document.createElement("h2");
-            name.textContent = guest.name;
-
-            const seat = document.createElement("p");
-            seat.textContent = `Table ${guest.tableNumber}, seat ${guest.seatNumber}`;
-
-            item.append(name, seat);
-            list.append(item);
-        }
-
-        resultsContainer.replaceChildren(list);
+function renderGuests(guests) {
+    if (guests.length === 0) {
+        showMessage("No guests found with this name.");
+        return;
     }
+
+    // A single match takes over the whole screen; several matches stay a list.
+    if (guests.length === 1) {
+        renderSingleGuest(guests[0]);
+        return;
+    }
+
+    renderList(guests);
+}
+
+function renderList(guests) {
+    resultsContainer.classList.remove("single-view");
+
+    const list = document.createElement("ul");
+    list.className = "search-results-list";
+
+    for (const guest of guests) {
+        const item = document.createElement("li");
+        item.className = "search-result";
+        item.tabIndex = 0;
+        item.setAttribute("role", "button");
+
+        const name = document.createElement("h2");
+        name.textContent = guest.name;
+
+        const seat = document.createElement("p");
+        seat.textContent = `Table ${guest.tableNumber}, Seat ${guest.seatNumber}`;
+
+        item.append(name, seat);
+
+        const select = () => selectGuest(guest);
+        item.addEventListener("click", select);
+        item.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                select();
+            }
+        });
+
+        list.append(item);
+    }
+
+    resultsContainer.replaceChildren(list);
+}
+
+// Picking one result fills the search bar with that name and blows the result up full-screen.
+function selectGuest(guest) {
+    searchInput.value = guest.name;
+    renderSingleGuest(guest);
+}
+
+function renderSingleGuest(guest) {
+    resultsContainer.classList.add("single-view");
+
+    const card = document.createElement("div");
+    card.className = "single-guest";
+
+    const flowers = [
+        {src: "/images/orchid.png", cls: "single-guest-flower--top-left"},
+        {src: "/images/magnolia.png", cls: "single-guest-flower--bottom-right"}
+    ];
+
+    for (const flower of flowers) {
+        const img = document.createElement("img");
+        img.className = `single-guest-flower ${flower.cls}`;
+        img.src = flower.src;
+        img.alt = "";
+        img.setAttribute("aria-hidden", "true");
+        card.append(img);
+    }
+
+    const content = document.createElement("div");
+    content.className = "single-guest-content";
+
+    const name = document.createElement("h2");
+    name.className = "single-guest-name";
+    name.textContent = guest.name;
+
+    const seat = document.createElement("p");
+    seat.className = "single-guest-seat";
+    seat.textContent = `Table ${guest.tableNumber}, Seat ${guest.seatNumber}`;
+
+    content.append(name, seat);
+    card.append(content);
+
+    resultsContainer.replaceChildren(card);
+}
+
+function showMessage(text) {
+    resultsContainer.classList.remove("single-view");
+
+    const message = document.createElement("p");
+    message.textContent = text;
+
+    resultsContainer.replaceChildren(message);
 }
