@@ -4,4 +4,15 @@
 # reachable by Let's Encrypt's validation servers (not just an IP allowlist).
 tharsagan.no {
 	reverse_proxy 127.0.0.1:8080
+
+	# Per-request access log (off by default in Caddy). JSON records the request line,
+	# status, client IP and headers (e.g. Sec-Fetch-Site, User-Agent) as seen at the edge,
+	# which complements the app logs when diagnosing client/redirect issues.
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+		format json
+	}
 }
