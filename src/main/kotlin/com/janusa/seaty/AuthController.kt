@@ -43,7 +43,11 @@ class AuthController(
                     .httpOnly(true)
                     .secure(true)
                     .maxAge(Duration.ofDays(1))
-                    .sameSite("strict")
+                    // Lax (not Strict) so the cookie is sent on the top-level redirect that
+                    // follows /auth. A QR scan is an externally-initiated (cross-site) navigation;
+                    // with Strict the browser withholds the freshly-set cookie on the redirect to
+                    // /index.html, causing a 401 on the very first hop (observed on Samsung Internet).
+                    .sameSite("lax")
                     .build()
 
             ResponseEntity
