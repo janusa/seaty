@@ -12,10 +12,9 @@ const MAX_SEARCH_LENGTH = 80;
 
 searchInput.addEventListener("input", () => {
     clearTimeout(timeoutId);
-    persistQuery(searchInput.value);
 
     timeoutId = setTimeout(() => {
-        searchGuests(searchInput.value);
+        commitSearch(searchInput.value);
     }, 200);
 });
 
@@ -23,8 +22,15 @@ searchInput.addEventListener("input", () => {
 searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
     clearTimeout(timeoutId);
-    persistQuery(searchInput.value);
-    searchGuests(searchInput.value);
+    commitSearch(searchInput.value);
+});
+
+// Back/forward navigates between past searches: re-sync the input and results from the URL,
+// without pushing a new entry (this navigation *is* the history change).
+window.addEventListener("popstate", () => {
+    const name = new URLSearchParams(window.location.search).get("name") ?? "";
+    searchInput.value = name;
+    searchGuests(name);
 });
 
 // Restore the previous search after a reload by reading it back from the URL.
@@ -34,18 +40,32 @@ if (initialQuery) {
     searchGuests(initialQuery);
 }
 
-// Keep the current search in the URL so it survives a page reload (and can be shared).
-function persistQuery(value) {
-    const params = new URLSearchParams(window.location.search);
+// Run a search and record it as a new history entry, so Back/Forward step between searches.
+function commitSearch(value) {
+    pushQuery(value);
+    searchGuests(value);
+}
 
-    if (value.trim().length === 0) {
+// Push the current search onto the browser history (skipping duplicates so an unchanged
+// query doesn't create a dead entry). Keeping it in the URL also lets a search survive a
+// reload and be shared.
+function pushQuery(value) {
+    const params = new URLSearchParams(window.location.search);
+    const current = params.get("name");
+    const next = value.trim().length === 0 ? null : value;
+
+    if (next === current) {
+        return;
+    }
+
+    if (next === null) {
         params.delete("name");
     } else {
-        params.set("name", value);
+        params.set("name", next);
     }
 
     const query = params.toString();
-    window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
+    window.history.pushState(null, "", query ? `?${query}` : window.location.pathname);
 }
 
 async function searchGuests(value) {
@@ -127,7 +147,7 @@ function renderList(guests) {
 // Picking one result fills the search bar with that name and blows the result up full-screen.
 function selectGuest(guest) {
     searchInput.value = guest.name;
-    persistQuery(guest.name);
+    pushQuery(guest.name);
     renderSingleGuest(guest);
 }
 
