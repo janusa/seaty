@@ -32,9 +32,8 @@ class AuthController(
             null
         } else {
             log.info(
-                "Authentication succeeded from {}, issuing session cookie (referer={}, secFetchSite={})",
+                "Authentication succeeded from {}, issuing session cookie (secFetchSite={})",
                 request.remoteAddr,
-                request.getHeader("Referer") ?: "none",
                 request.getHeader("Sec-Fetch-Site") ?: "none",
             )
             val cookie =
