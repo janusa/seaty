@@ -31,7 +31,12 @@ class AuthController(
             response.sendError(HttpStatus.UNAUTHORIZED.value())
             null
         } else {
-            log.info("Authentication succeeded from {}, issuing session cookie", request.remoteAddr)
+            log.info(
+                "Authentication succeeded from {}, issuing session cookie (referer={}, secFetchSite={})",
+                request.remoteAddr,
+                request.getHeader("Referer") ?: "none",
+                request.getHeader("Sec-Fetch-Site") ?: "none",
+            )
             val cookie =
                 ResponseCookie
                     .from("session", secret)
