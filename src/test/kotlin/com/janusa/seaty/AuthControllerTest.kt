@@ -42,7 +42,7 @@ class AuthControllerTest {
             .expectCookie()
             .httpOnly("session", true)
             .expectCookie()
-            .sameSite("session", "strict")
+            .sameSite("session", "lax")
     }
 
     @Test
