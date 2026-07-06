@@ -96,12 +96,6 @@ function renderGuests(guests) {
         return;
     }
 
-    // A single match takes over the whole screen; several matches stay a list.
-    if (guests.length === 1) {
-        renderSingleGuest(guests[0]);
-        return;
-    }
-
     renderList(guests);
 }
 
