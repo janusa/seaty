@@ -10,7 +10,14 @@ VALUES ('Alice'),
        ('Bobby'),
        ('Ali'),
        ('Charles'),
-       ('Charlotte');
+       ('Charlotte'),
+       ('Chase'),
+       ('Chad'),
+       ('Chantelle'),
+       ('Chanel'),
+       ('Charlie'),
+       ('Chandler'),
+       ('Charlene');
 
 INSERT INTO dining_table (table_number)
 VALUES (1),
@@ -24,10 +31,17 @@ VALUES (1, 1),
        (2, 1),
        (3, 2),
        (4, 2),
-       (5, 5),
+       (5, 2),
        (6, 2),
-       (7, 5),
-       (8, 2);
+       (7, 3),
+       (8, 3),
+       (9, 4),
+       (10, 4),
+       (11, 4),
+       (12, 4),
+       (13, 5),
+       (14, 5),
+       (15, 5);
 
 INSERT INTO seating_assignment(guest_id, seat_id)
 VALUES (1, 3),
@@ -37,4 +51,11 @@ VALUES (1, 3),
        (5, 5),
        (6, 6),
        (7, 7),
-       (8, 4);
+       (8, 4),
+       (9, 14),
+       (10, 10),
+       (11, 15),
+       (12, 9),
+       (13, 11),
+       (14, 13),
+       (15, 12);
