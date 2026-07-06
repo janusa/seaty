@@ -4,6 +4,9 @@ const resultsContainer = document.querySelector("#search-result-container");
 
 let timeoutId = null;
 
+// What's currently on screen, so an identical result doesn't re-render (and re-trigger the animations).
+let renderedKey = null;
+
 const MIN_SEARCH_LENGTH = 3;
 const MAX_SEARCH_LENGTH = 80;
 
@@ -83,6 +86,10 @@ function renderGuests(guests) {
 }
 
 function renderList(guests) {
+    if (isAlreadyRendered(`list:${guests.map((guest) => guest.id).join(",")}`)) {
+        return;
+    }
+
     resultsContainer.classList.remove("single-view");
 
     const list = document.createElement("ul");
@@ -125,6 +132,10 @@ function selectGuest(guest) {
 }
 
 function renderSingleGuest(guest) {
+    if (isAlreadyRendered(`single:${guest.id}`)) {
+        return;
+    }
+
     resultsContainer.classList.add("single-view");
 
     const card = document.createElement("div");
@@ -162,10 +173,24 @@ function renderSingleGuest(guest) {
 }
 
 function showMessage(text) {
+    if (isAlreadyRendered(`message:${text}`)) {
+        return;
+    }
+
     resultsContainer.classList.remove("single-view");
 
     const message = document.createElement("p");
     message.textContent = text;
 
     resultsContainer.replaceChildren(message);
+}
+
+// Returns true when the requested content is already on screen; otherwise records it as the new state.
+function isAlreadyRendered(key) {
+    if (renderedKey === key) {
+        return true;
+    }
+
+    renderedKey = key;
+    return false;
 }
