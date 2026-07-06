@@ -28,11 +28,27 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
     fun `results are ordered by name`() {
         // Empty prefix becomes the LIKE pattern "%", matching every guest.
         assertThat(guestRepository.findGuests("").map { it.name })
-            .containsExactly("Ali", "Alice", "Bob", "Bobby", "Charles", "Charlie", "Charlotte", "Eve")
+            .containsExactly(
+                "Ali",
+                "Alice",
+                "Bob",
+                "Bobby",
+                "Chad",
+                "Chandler",
+                "Chanel",
+                "Chantelle",
+                "Charlene",
+                "Charles",
+                "Charlie",
+                "Charlie",
+                "Charlotte",
+                "Chase",
+                "Eve",
+            )
     }
 
     @Test
     fun `maps id, name, seat and table`() {
-        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(5, "Bobby", 5, 5))
+        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(5, "Bobby", 5, 2))
     }
 }
