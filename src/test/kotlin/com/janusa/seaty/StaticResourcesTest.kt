@@ -69,7 +69,7 @@ class StaticResourcesTest : AbstractWebIntegrationTest() {
         val doc = Jsoup.parse(html ?: "")
 
         assertThat(doc.title()).isEqualTo("Seaty")
-        assertThat(doc.selectFirst("h1")?.text()).isEqualTo("Seaty!")
+        assertThat(doc.selectFirst("h1")?.text()).isEqualTo("Guest Search")
 
         // Resolve the stylesheet the page references and confirm it is actually served
         // (guards against a broken <link href> after future edits).
