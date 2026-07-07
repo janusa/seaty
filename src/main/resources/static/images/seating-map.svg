@@ -233,4 +233,7 @@
 
 <!-- Removed only the marked vertical wall segment on the right-hand side -->
 <line x1="649" y1="84" x2="649" y2="240" stroke="#F8F6F1" stroke-width="8" stroke-linecap="square" />
+
+<!-- Reception notice in the bottom-right alcove -->
+<text x="570" y="275" fill="#5D6D56" font-family="sans-serif" font-size="14" font-style="italic" text-anchor="middle" dominant-baseline="middle">Entrance</text>
 </svg>
