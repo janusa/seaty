@@ -1,7 +1,3 @@
-const searchForm = document.querySelector("form[role='search']");
-const searchInput = document.querySelector("#guest-search");
-const resultsContainer = document.querySelector("#search-result-container");
-
 let timeoutId = null;
 
 // What's currently on screen, so an identical result doesn't re-render (and re-trigger the animations).
@@ -13,38 +9,55 @@ let seatingMapMarkup = null;
 const MIN_SEARCH_LENGTH = 3;
 const MAX_SEARCH_LENGTH = 80;
 
-searchInput.addEventListener("input", () => {
-    clearTimeout(timeoutId);
+// DOM handles, assigned by the browser bootstrap at the bottom of the file. They stay undefined when
+// this file is loaded outside a browser (the definitions below are pure and don't touch them).
+let searchForm;
+let searchInput;
+let resultsContainer;
 
-    timeoutId = setTimeout(() => {
-        commitSearch(searchInput.value);
-    }, 200);
-});
+// Compute the history query string for a state change, or return null when the state is unchanged (so
+// an identical entry isn't pushed). Pure: it takes the current query string rather than reading
+// `window`, so the routing logic stands on its own. Returns "" to mean "clear the query".
+function buildQuery(currentSearch, name, guestId) {
+    const current = new URLSearchParams(currentSearch);
+    const nextName = name.trim().length === 0 ? null : name;
+    const nextGuest = guestId === null ? null : String(guestId);
 
-// Pressing Enter would otherwise submit the form and reload the page; search in place instead.
-searchForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    clearTimeout(timeoutId);
-    commitSearch(searchInput.value);
-});
+    if (current.get("name") === nextName && current.get("guest") === nextGuest) {
+        return null;
+    }
 
-// Back/forward navigates between past states: re-sync the input and results from the URL,
-// without pushing a new entry (this navigation *is* the history change).
-window.addEventListener("popstate", () => {
-    renderFromUrl();
-});
+    const params = new URLSearchParams();
+    if (nextName !== null) {
+        params.set("name", nextName);
+    }
+    if (nextGuest !== null) {
+        params.set("guest", nextGuest);
+    }
 
-// Restore whatever the URL describes after a reload: a past search, or a guest's seating map.
-if (window.location.search) {
-    renderFromUrl();
+    const query = params.toString();
+    return query ? `?${query}` : "";
+}
+
+// Parse a history query string into the view state it describes: a name, and an optional guest id.
+// The read half of what buildQuery writes, and DOM-free in the same way.
+function parseQuery(search) {
+    const params = new URLSearchParams(search);
+    return {
+        name: params.get("name") ?? "",
+        guestId: params.get("guest"),
+    };
+}
+
+// The id every chair in the seating-map SVG carries, composed of a guest's table and seat.
+function seatElementId(tableNumber, seatNumber) {
+    return `table-${tableNumber}-seat-${seatNumber}`;
 }
 
 // Reflect the URL on screen: the list for a `?name=` search, or the map for a `?name=&guest=`
 // selection. Used on first load and on Back/Forward, where all we have is the query string.
 function renderFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get("name") ?? "";
-    const guestId = params.get("guest");
+    const { name, guestId } = parseQuery(window.location.search);
     searchInput.value = name;
 
     if (guestId) {
@@ -64,24 +77,11 @@ function commitSearch(value) {
 // selection. Skips duplicates so an unchanged state doesn't create a dead entry; keeping it in the
 // URL also lets a search — or a selected seat — survive a reload and be shared.
 function pushState(name, guestId) {
-    const current = new URLSearchParams(window.location.search);
-    const nextName = name.trim().length === 0 ? null : name;
-    const nextGuest = guestId === null ? null : String(guestId);
-
-    if (current.get("name") === nextName && current.get("guest") === nextGuest) {
+    const query = buildQuery(window.location.search, name, guestId);
+    if (query === null) {
         return;
     }
-
-    const params = new URLSearchParams();
-    if (nextName !== null) {
-        params.set("name", nextName);
-    }
-    if (nextGuest !== null) {
-        params.set("guest", nextGuest);
-    }
-
-    const query = params.toString();
-    window.history.pushState(null, "", query ? `?${query}` : window.location.pathname);
+    window.history.pushState(null, "", query || window.location.pathname);
 }
 
 async function searchGuests(value) {
@@ -228,7 +228,7 @@ async function renderSeatingMap(guest) {
     svg.removeAttribute("height");
     svg.setAttribute("aria-hidden", "true");
 
-    const chair = svg.querySelector(`#table-${guest.tableNumber}-seat-${guest.seatNumber}`);
+    const chair = svg.querySelector(`#${seatElementId(guest.tableNumber, guest.seatNumber)}`);
     if (chair) {
         svg.classList.add("is-focused");
         chair.classList.add("seat-highlight");
@@ -272,4 +272,39 @@ function isAlreadyRendered(key) {
 
     renderedKey = key;
     return false;
+}
+
+// Page bootstrap. Guarded by a document check and kept apart from the definitions above so those pure
+// functions can also be loaded outside a browser; in a browser this branch always runs. It grabs the
+// DOM handles, wires the search box, and restores whatever state the URL already describes.
+if (typeof document !== "undefined") {
+    searchForm = document.querySelector("form[role='search']");
+    searchInput = document.querySelector("#guest-search");
+    resultsContainer = document.querySelector("#search-result-container");
+
+    searchInput.addEventListener("input", () => {
+        clearTimeout(timeoutId);
+
+        timeoutId = setTimeout(() => {
+            commitSearch(searchInput.value);
+        }, 200);
+    });
+
+    // Pressing Enter would otherwise submit the form and reload the page; search in place instead.
+    searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearTimeout(timeoutId);
+        commitSearch(searchInput.value);
+    });
+
+    // Back/forward navigates between past states: re-sync the input and results from the URL,
+    // without pushing a new entry (this navigation *is* the history change).
+    window.addEventListener("popstate", () => {
+        renderFromUrl();
+    });
+
+    // Restore whatever the URL describes after a reload: a past search, or a guest's seating map.
+    if (window.location.search) {
+        renderFromUrl();
+    }
 }
