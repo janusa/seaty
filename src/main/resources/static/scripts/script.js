@@ -271,6 +271,8 @@ function renderTableDetail(table, guest) {
     );
     chair?.classList.add("seat-highlight");
 
+    labelTable(tableClone, guest.tableNumber);
+
     tableClone.removeAttribute("id");
     for (const node of tableClone.querySelectorAll("[id]")) {
         node.removeAttribute("id");
@@ -295,6 +297,44 @@ function renderTableDetail(table, guest) {
     });
 
     return wrapper;
+}
+
+// Write the table's name across the middle of the close-up table: its number, or "Head Table" for the
+// rectangular head table. The centre is taken from the table body (the id-less circle/rect the seats
+// sit around), so the label lands dead centre whatever the table's shape.
+function labelTable(tableClone, tableNumber) {
+    const isHeadTable = tableClone.classList.contains("rectangular-table");
+    const body = tableClone.querySelector(":scope > circle:not([id]), :scope > rect:not([id])");
+    if (!body) {
+        return;
+    }
+
+    let centerX;
+    let centerY;
+    if (body.hasAttribute("cx")) {
+        centerX = Number(body.getAttribute("cx"));
+        centerY = Number(body.getAttribute("cy"));
+    } else {
+        centerX = Number(body.getAttribute("x")) + Number(body.getAttribute("width")) / 2;
+        centerY = Number(body.getAttribute("y")) + Number(body.getAttribute("height")) / 2;
+    }
+
+    const label = document.createElementNS(SVG_NAMESPACE, "text");
+    label.setAttribute("x", centerX);
+    label.setAttribute("y", centerY);
+    label.setAttribute("text-anchor", "middle");
+    // `central` centres on the font's em box, which leaves digits sitting low; renderTableDetail
+    // measures the laid-out glyphs and nudges `y` so the visible text is dead centre. This is just
+    // the starting point and the target to centre on.
+    label.setAttribute("dominant-baseline", "central");
+    label.dataset.centerY = centerY;
+    label.classList.add("table-label");
+    if (isHeadTable) {
+        label.classList.add("head-table-label");
+    }
+    label.textContent = isHeadTable ? "Head Table" : String(tableNumber);
+
+    tableClone.append(label);
 }
 
 function showMessage(text) {

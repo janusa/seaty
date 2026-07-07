@@ -122,6 +122,23 @@ class PlaywrightSmokeTest {
             val viewBox = page.querySelector(".seating-map-detail svg")?.getAttribute("viewBox")
             assertThat(viewBox).isNotNull()
             assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
+
+            // A round table is labelled with its number in the middle of the close-up (guest 8 is at table 1).
+            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("1")
+        }
+    }
+
+    @Test
+    fun `the head table close-up is labelled Head Table`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            // Guest 133 (Ximena) sits at the rectangular head table (table 17).
+            page.navigate("$baseUrl/?name=Ximena&guest=133")
+            page.waitForSelector(".seating-map-detail .table-label")
+
+            val label = page.querySelector(".seating-map-detail .table-label")
+            assertThat(label?.textContent()).isEqualTo("Head Table")
+            assertThat(label?.getAttribute("class")).contains("head-table-label")
         }
     }
 

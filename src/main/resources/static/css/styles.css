@@ -272,6 +272,24 @@ textarea {
     height: auto;
 }
 
+/* The table's name written across the middle of the close-up table. Font size is in user units, so it
+   scales with the cropped viewBox. */
+.table-label {
+    fill: var(--main-font-color);
+    font-family: Cormorant, serif;
+    font-size: 14px;
+    font-weight: 500;
+
+    /* Cormorant defaults to old-style figures, whose descenders (3, 4, 5, 7, 9) throw off the
+       centring; lining figures share one baseline-to-cap-height box so every number sits alike. */
+    font-variant-numeric: lining-nums;
+}
+
+/* "Head Table" is far longer than a number, so shrink it to fit the rectangular table. */
+.head-table-label {
+    font-size: 8px;
+}
+
 @keyframes grow-in {
     from {
         opacity: 0;
