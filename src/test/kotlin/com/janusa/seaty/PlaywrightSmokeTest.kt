@@ -17,8 +17,9 @@ import org.springframework.test.context.DynamicPropertySource
 /**
  * Real-browser smoke tests for the guest-search frontend: drive headless Chromium against the app on a
  * random port and assert on the rendered DOM. Covers the happy path plus the DOM/fetch branches the
- * GraalJS unit tests can't reach (deep-link restore, stale-link fallback, empty results). One Chromium
- * and one server are shared across the class; each test uses a fresh authenticated context.
+ * GraalJS unit tests can't reach (deep-link restore, stale-link fallback, empty results) and the
+ * responsive portrait-phone layout. One Chromium and one server are shared across the class; each test
+ * uses a fresh authenticated context.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PlaywrightSmokeTest {
@@ -27,8 +28,10 @@ class PlaywrightSmokeTest {
 
     private val baseUrl get() = "http://localhost:$port"
 
-    private fun newAuthenticatedContext(): BrowserContext {
-        val context = browser.newContext()
+    private fun newAuthenticatedContext(
+        options: Browser.NewContextOptions = Browser.NewContextOptions(),
+    ): BrowserContext {
+        val context = browser.newContext(options)
         context.addCookies(listOf(Cookie("session", TEST_SECRET).setUrl(baseUrl)))
         return context
     }
@@ -76,6 +79,34 @@ class PlaywrightSmokeTest {
             page.fill("#guest-search", "Zzz")
             val message = page.waitForSelector("text=No guests found with this name.")
             assertThat(message.textContent()?.trim()).isEqualTo("No guests found with this name.")
+        }
+    }
+
+    @Test
+    fun `on a portrait phone viewport the seating map is rotated a quarter turn`() {
+        val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
+        newAuthenticatedContext(portrait).use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Charlotte&guest=8")
+            page.waitForSelector(".seating-map svg")
+
+            // The portrait media query rotates the map svg a quarter-turn; its computed transform
+            // matrix(a, b, c, d, ...) then encodes rotate(90deg) as (a, b, c, d) ~= (0, 1, -1, 0).
+            val quarterTurned =
+                page.evaluate(
+                    """
+                    () => {
+                        const svg = document.querySelector('.seating-map svg');
+                        const match = getComputedStyle(svg).transform.match(/matrix\(([^)]+)\)/);
+                        if (!match) return false;
+                        const [a, b, c, d] = match[1].split(',').map(Number);
+                        const near = (value, target) => Math.abs(value - target) < 0.001;
+                        return near(a, 0) && near(b, 1) && near(c, -1) && near(d, 0);
+                    }
+                    """.trimIndent(),
+                )
+
+            assertThat(quarterTurned as Boolean).isTrue()
         }
     }
 
