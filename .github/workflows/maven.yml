@@ -26,7 +26,7 @@ jobs:
             ${{ runner.os }}-playwright-
       - name: Install Playwright Chromium + OS deps
         run: >
-          ./mvnw -B org.codehaus.mojo:exec-maven-plugin:3.5.0:java
+          ./mvnw -B org.codehaus.mojo:exec-maven-plugin:3.6.3:java
           -Dexec.mainClass=com.microsoft.playwright.CLI
           -Dexec.args="install --with-deps chromium"
           -Dexec.classpathScope=test
