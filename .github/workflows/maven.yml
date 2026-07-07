@@ -24,6 +24,17 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
+      # The Biome frontend gate (verify) downloads the pinned per-OS binary into ~/.cache/biome
+      # itself, so no install step is needed - only this cache, so it isn't re-fetched every run.
+      # On a version bump the exact key misses; restore-keys reuses the newest cache and the
+      # antrun <get skipexisting> fetches just the new version.
+      - name: Cache Biome binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/biome
+          key: ${{ runner.os }}-biome-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-biome-
       - name: Install Playwright Chromium + OS deps
         run: >
           ./mvnw -B org.codehaus.mojo:exec-maven-plugin:3.6.3:java
