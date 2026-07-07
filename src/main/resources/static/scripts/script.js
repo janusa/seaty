@@ -201,6 +201,19 @@ async function renderSeatingMap(guest) {
     }
 
     resultsContainer.replaceChildren(caption, map);
+
+    // Scroll the highlighted seat into view: on a phone the (rotated) map is taller than the
+    // screen, so the seat can start off-screen. Wait a frame so the map has been laid out first.
+    if (chair) {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        requestAnimationFrame(() => {
+            chair.scrollIntoView({
+                behavior: prefersReducedMotion ? "auto" : "smooth",
+                block: "center",
+                inline: "center",
+            });
+        });
+    }
 }
 
 function showMessage(text) {
