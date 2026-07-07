@@ -1,8 +1,8 @@
 :root {
-    --background-color: #F8F6F1;
-    --green: #6F8263;
-    --light-green: #A7B49A;
-    --main-font-color: #5D6D56;
+    --background-color: #f8f6f1;
+    --green: #6f8263;
+    --light-green: #a7b49a;
+    --main-font-color: #5d6d56;
 }
 
 *,
@@ -15,7 +15,8 @@ html {
     font-size: clamp(20px, 5vw, 38px);
 }
 
-html, body {
+html,
+body {
     margin: 0;
 }
 
@@ -27,17 +28,17 @@ html, body {
     background-color: var(--background-color);
     color: var(--main-font-color);
 
-    background-image: url("/images/flower_bottom_left.png"),
-    url("/images/flower_bottom_right.png");
+    background-image: url("/images/flower_bottom_left.png"), url("/images/flower_bottom_right.png");
 
-    background-repeat: no-repeat,
-    no-repeat;
+    background-repeat: no-repeat, no-repeat;
 
-    background-size: 40vh auto,
-    40vh auto;
+    background-size:
+        40vh auto,
+        40vh auto;
 
-    background-position: left -30vw bottom -14vh,
-    right -15vw bottom -20vh;
+    background-position:
+        left -30vw bottom -14vh,
+        right -15vw bottom -20vh;
 
     /* Keep the corner flowers pinned to the viewport while results scroll. */
     background-attachment: fixed;
@@ -80,7 +81,6 @@ textarea {
 .search-container {
     height: 3rem;
     border: 1px solid var(--main-font-color);
-    border-radius: 1.5rem;
     border-radius: 1.5rem;
     padding: 0 1rem;
     display: flex;
@@ -136,7 +136,9 @@ textarea {
     flex-direction: column;
     background-color: var(--background-color);
     cursor: pointer;
-    transition: transform 150ms ease, box-shadow 150ms ease;
+    transition:
+        transform 150ms ease,
+        box-shadow 150ms ease;
 }
 
 .search-result:hover,
@@ -164,7 +166,7 @@ textarea {
     height: 50vh;
     max-height: clamp(1000px, 40vh, 1500px);
     width: auto;
-    opacity: .40;
+    opacity: 0.4;
 }
 
 .bottom-left {
@@ -243,7 +245,8 @@ textarea {
 }
 
 @keyframes seat-pulse {
-    0%, 100% {
+    0%,
+    100% {
         transform: scale(1);
         filter: drop-shadow(0 0 2px var(--green));
     }

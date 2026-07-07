@@ -7,7 +7,6 @@ let renderedKey = null;
 let seatingMapMarkup = null;
 
 const MIN_SEARCH_LENGTH = 3;
-const MAX_SEARCH_LENGTH = 80;
 
 // DOM handles, assigned by the browser bootstrap at the bottom of the file. They stay undefined when
 // this file is loaded outside a browser (the definitions below are pure and don't touch them).
@@ -94,13 +93,12 @@ async function searchGuests(value) {
 
     try {
         const response = await fetch(`/api/guests?name=${encodeURIComponent(query)}`, {
-            method: "GET"
+            method: "GET",
         });
 
         const guests = await response.json();
 
         renderGuests(guests);
-
     } catch (error) {
         console.error(error);
     }
@@ -166,7 +164,7 @@ function selectGuest(guest) {
 async function showSeatingMapById(name, guestId) {
     try {
         const response = await fetch(`/api/guests?name=${encodeURIComponent(name)}`, {
-            method: "GET"
+            method: "GET",
         });
 
         const guests = await response.json();
