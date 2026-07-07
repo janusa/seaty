@@ -421,6 +421,33 @@
                             </target>
                         </configuration>
                     </execution>
+                    <!-- Auto-fix counterpart to the 'biome' gate, the JS/CSS analogue of `spotless:apply`.
+                         Deliberately bound to NO phase, so it never runs in a normal build - invoke it on
+                         demand with `./mvnw antrun:run@biome-fix`. Biome's check in write mode applies the
+                         formatter and every *safe* lint fix in place; findings whose only fix is unsafe
+                         (or that have none) are left for a human and reported, so failonerror is false
+                         (this is a fixer, not a gate). Re-provisions the binary the same way as the gate
+                         so it works even if the gate hasn't run yet. -->
+                    <execution>
+                        <id>biome-fix</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="biome-fix">
+                                <mkdir dir="${biome.cache.dir}"/>
+                                <get src="${biome.url}" dest="${biome.cache.dir}/${biome.binary}"
+                                     skipexisting="true" usetimestamp="true"/>
+                                <chmod file="${biome.cache.dir}/${biome.binary}" perm="+x"/>
+                                <exec executable="${biome.cache.dir}/${biome.binary}"
+                                      dir="${project.basedir}" failonerror="false">
+                                    <arg value="check"/>
+                                    <arg value="--write"/>
+                                    <arg value="src/main/resources/static"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
