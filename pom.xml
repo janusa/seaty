@@ -126,6 +126,16 @@
             <type>pom</type>
             <scope>test</scope>
         </dependency>
+        <!-- Playwright drives a real headless Chromium against the running app to smoke-test the frontend's
+             DOM/fetch behavior end to end - the paths the GraalJS unit tests can't reach. Test-scoped, so it
+             never enters the deploy jar. The Chromium binary is installed out of band, not by Maven: the first
+             local test run auto-downloads it; CI installs + caches it. -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.61.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Architecture tests: express the Controller -> Repository layering as
              plain JUnit5 tests. ArchUnit analyses compiled bytecode, so it is language-agnostic
              (the Kotlin/K2 version is irrelevant) and needs no Maven plugin - the @ArchTest classes

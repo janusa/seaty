@@ -17,6 +17,20 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: maven
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install Playwright Chromium + OS deps
+        run: >
+          ./mvnw -B org.codehaus.mojo:exec-maven-plugin:3.5.0:java
+          -Dexec.mainClass=com.microsoft.playwright.CLI
+          -Dexec.args="install --with-deps chromium"
+          -Dexec.classpathScope=test
+          --file pom.xml
       - name: Build with Maven
         run: ./mvnw -B verify --file pom.xml
       - name: Publish jar for deployment
