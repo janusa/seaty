@@ -17,8 +17,10 @@ class WebConfig(
             .addPathPatterns("/**")
             // The whole /error tree stays open: the error-dispatch page must render without
             // re-triggering auth, and its flower images must load even on the unauthenticated 401 page.
-            .excludePathPatterns("/auth", "/error", "/error/**")
-        log.info("Registered AuthInterceptor for /** (excluding /auth and /error/**)")
+            // The favicons stay open too: browsers auto-request /favicon.ico and the icons must show
+            // on the unauthenticated landing and error pages.
+            .excludePathPatterns("/auth", "/error", "/error/**", "/favicon.ico", "/apple-touch-icon.png")
+        log.info("Registered AuthInterceptor for /** (excluding /auth, /error/** and favicons)")
     }
 
     private companion object {
