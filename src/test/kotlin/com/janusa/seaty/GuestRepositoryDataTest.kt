@@ -16,7 +16,7 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
 
     @Test
     fun `prefix match returns the matching guest`() {
-        assertThat(guestRepository.findGuests("Alic")).containsExactly(Guest(1, "Alice", 3, 2))
+        assertThat(guestRepository.findGuests("Alic")).containsExactly(Guest(1, "Alice", 1, 1))
     }
 
     @Test
@@ -27,28 +27,13 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
     @Test
     fun `results are ordered by name`() {
         // Empty prefix becomes the LIKE pattern "%", matching every guest.
-        assertThat(guestRepository.findGuests("").map { it.name })
-            .containsExactly(
-                "Ali",
-                "Alice",
-                "Bob",
-                "Bobby",
-                "Chad",
-                "Chandler",
-                "Chanel",
-                "Chantelle",
-                "Charlene",
-                "Charles",
-                "Charlie",
-                "Charlie",
-                "Charlotte",
-                "Chase",
-                "Eve",
-            )
+        val names = guestRepository.findGuests("").map { it.name }
+        assertThat(names).hasSize(144)
+        assertThat(names).isSorted()
     }
 
     @Test
     fun `maps id, name, seat and table`() {
-        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(5, "Bobby", 5, 2))
+        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(5, "Bobby", 5, 1))
     }
 }

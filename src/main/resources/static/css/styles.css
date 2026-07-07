@@ -179,76 +179,97 @@ textarea {
     bottom: 0;
 }
 
-/* Single-guest full-screen view: one match grows to fill the result area. */
-.search-result-container.single-view {
+/* Seating-map view: the whole room, with the selected guest's table and chair lit up. */
+.search-result-container.map-view {
     margin-bottom: 1rem;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
-/* Drop the page's corner flowers in this view so only the card's own botanicals show. */
-.page:has(.search-result-container.single-view) {
+/* Drop the page's corner flowers so the map has the space to itself. */
+.page:has(.search-result-container.map-view) {
     background-image: none;
 }
 
-.single-guest {
-    position: relative;
-    flex: 1;
+.seating-map-caption {
+    text-align: center;
+    animation: fade-in-up 500ms ease-out both;
+}
+
+.seating-map-name {
+    margin: 0;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+}
+
+.seating-map-seat {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 300;
+}
+
+.seating-map {
     width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    /* Match the gap below the search bar that the results list gets from a <ul>'s default 1em margin. */
-    margin-top: 1em;
-    border: 1px solid var(--main-font-color);
-    border-radius: 1.25rem;
-    background-color: var(--background-color);
+    max-width: 900px;
     animation: grow-in 450ms ease-out both;
 }
 
-.single-guest-content {
-    text-align: center;
-    z-index: 1;
+.seating-map svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
-.single-guest-name {
-    margin: 0;
-    font-size: clamp(2.5rem, 11vw, 5.5rem);
-    font-weight: 300;
-    line-height: 1.05;
-    animation: fade-in-up 600ms ease-out 120ms both;
+/* When a seat is focused, fade the other tables back so the guest's own table stands out. */
+.seating-map svg.is-focused .round-table,
+.seating-map svg.is-focused .rectangular-table {
+    opacity: 0.3;
+    transition: opacity 300ms ease;
 }
 
-.single-guest-seat {
-    margin: 1rem 0 0;
-    font-size: clamp(1.1rem, 5vw, 2rem);
-    font-weight: 300;
-    animation: fade-in-up 600ms ease-out 240ms both;
+.seating-map svg.is-focused .table-highlight {
+    opacity: 1;
 }
 
-.single-guest-flower {
-    position: absolute;
-    width: auto;
-    opacity: 0;
-    pointer-events: none;
-    transform: rotate(var(--rot, 0deg));
-    animation: flower-appear 800ms ease-out var(--delay, 0ms) both;
+/* The guest's chair: accent fill plus a gentle pulsing glow. A CSS fill overrides the circle's
+   inline fill attribute, since presentation attributes are the lowest-priority style. */
+.seating-map .seat-highlight {
+    fill: var(--green);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: seat-pulse 1.6s ease-in-out infinite;
 }
 
-.single-guest-flower--top-left {
-    top: 0;
-    left: -10vw;
-    height: 40%;
-    --flower-opacity: 0.6;
+@keyframes seat-pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px var(--green));
+    }
+
+    50% {
+        transform: scale(1.6);
+        filter: drop-shadow(0 0 6px var(--green));
+    }
 }
 
-.single-guest-flower--bottom-right {
-    right: -20vw;
-    bottom: 0;
-    height: 60%;
-    --flower-opacity: 0.45;
-    --delay: 240ms;
+/* On a phone the room fits better upright, so rotate it a quarter-turn. Sizing the (landscape) svg
+   to 651/302 of the container width makes its rotated height line up with the container width. */
+@media (orientation: portrait) {
+    .seating-map {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 302 / 651;
+    }
+
+    .seating-map svg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: calc(100% * 651 / 302);
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
 }
 
 @keyframes grow-in {
@@ -275,24 +296,15 @@ textarea {
     }
 }
 
-@keyframes flower-appear {
-    to {
-        opacity: var(--flower-opacity, 0.5);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .search-results-list,
-    .single-guest,
-    .single-guest-name,
-    .single-guest-seat,
-    .single-guest-flower,
-    .search-result {
+    .search-result,
+    .seating-map,
+    .seating-map-caption,
+    .seating-map .seat-highlight,
+    .seating-map svg.is-focused .round-table,
+    .seating-map svg.is-focused .rectangular-table {
         animation: none;
         transition: none;
-    }
-
-    .single-guest-flower {
-        opacity: var(--flower-opacity, 0.5);
     }
 }

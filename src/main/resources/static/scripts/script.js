@@ -7,6 +7,9 @@ let timeoutId = null;
 // What's currently on screen, so an identical result doesn't re-render (and re-trigger the animations).
 let renderedKey = null;
 
+// The seating-map SVG markup, fetched once and reused for every selection.
+let seatingMapMarkup = null;
+
 const MIN_SEARCH_LENGTH = 3;
 const MAX_SEARCH_LENGTH = 80;
 
@@ -104,7 +107,7 @@ function renderList(guests) {
         return;
     }
 
-    resultsContainer.classList.remove("single-view");
+    resultsContainer.classList.remove("map-view");
 
     const list = document.createElement("ul");
     list.className = "search-results-list";
@@ -138,52 +141,66 @@ function renderList(guests) {
     resultsContainer.replaceChildren(list);
 }
 
-// Picking one result fills the search bar with that name and blows the result up full-screen.
+// Picking one result fills the search bar with that name and shows the seating map with their seat lit up.
 function selectGuest(guest) {
     searchInput.value = guest.name;
     pushQuery(guest.name);
-    renderSingleGuest(guest);
+    renderSeatingMap(guest);
 }
 
-function renderSingleGuest(guest) {
-    if (isAlreadyRendered(`single:${guest.id}`)) {
+// Fetch the seating-map SVG once and cache it (same-origin, so it rides the existing session cookie).
+async function loadSeatingMap() {
+    if (seatingMapMarkup === null) {
+        const response = await fetch("/images/seating-map.svg");
+        seatingMapMarkup = await response.text();
+    }
+
+    return seatingMapMarkup;
+}
+
+// Show the whole room, spotlighting the guest's table and chair. Every chair carries an id of the
+// form `table-{tableNumber}-seat-{seatNumber}`, so the guest's own seat is found by composing that id.
+async function renderSeatingMap(guest) {
+    if (isAlreadyRendered(`map:${guest.id}`)) {
         return;
     }
 
-    resultsContainer.classList.add("single-view");
+    resultsContainer.classList.add("map-view");
 
-    const card = document.createElement("div");
-    card.className = "single-guest";
+    const markup = await loadSeatingMap();
 
-    const flowers = [
-        {src: "/images/orchid.png", cls: "single-guest-flower--top-left"},
-        {src: "/images/magnolia.png", cls: "single-guest-flower--bottom-right"}
-    ];
-
-    for (const flower of flowers) {
-        const img = document.createElement("img");
-        img.className = `single-guest-flower ${flower.cls}`;
-        img.src = flower.src;
-        img.alt = "";
-        img.setAttribute("aria-hidden", "true");
-        card.append(img);
-    }
-
-    const content = document.createElement("div");
-    content.className = "single-guest-content";
+    // The name/seat caption is the accessible source of truth (and the fallback if the seat isn't on the map).
+    const caption = document.createElement("div");
+    caption.className = "seating-map-caption";
 
     const name = document.createElement("h2");
-    name.className = "single-guest-name";
+    name.className = "seating-map-name";
     name.textContent = guest.name;
 
     const seat = document.createElement("p");
-    seat.className = "single-guest-seat";
+    seat.className = "seating-map-seat";
     seat.textContent = `Table ${guest.tableNumber}, Seat ${guest.seatNumber}`;
 
-    content.append(name, seat);
-    card.append(content);
+    caption.append(name, seat);
 
-    resultsContainer.replaceChildren(card);
+    const map = document.createElement("div");
+    map.className = "seating-map";
+    map.innerHTML = markup;
+
+    const svg = map.querySelector("svg");
+    // Drop the intrinsic size so CSS controls how the map scales (and rotates on phones).
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.setAttribute("aria-hidden", "true");
+
+    const chair = svg.querySelector(`#table-${guest.tableNumber}-seat-${guest.seatNumber}`);
+    if (chair) {
+        svg.classList.add("is-focused");
+        chair.classList.add("seat-highlight");
+        chair.closest("g")?.classList.add("table-highlight");
+    }
+
+    resultsContainer.replaceChildren(caption, map);
 }
 
 function showMessage(text) {
@@ -191,7 +208,7 @@ function showMessage(text) {
         return;
     }
 
-    resultsContainer.classList.remove("single-view");
+    resultsContainer.classList.remove("map-view");
 
     const message = document.createElement("p");
     message.textContent = text;
