@@ -28,43 +28,56 @@ searchForm.addEventListener("submit", (event) => {
     commitSearch(searchInput.value);
 });
 
-// Back/forward navigates between past searches: re-sync the input and results from the URL,
+// Back/forward navigates between past states: re-sync the input and results from the URL,
 // without pushing a new entry (this navigation *is* the history change).
 window.addEventListener("popstate", () => {
-    const name = new URLSearchParams(window.location.search).get("name") ?? "";
-    searchInput.value = name;
-    searchGuests(name);
+    renderFromUrl();
 });
 
-// Restore the previous search after a reload by reading it back from the URL.
-const initialQuery = new URLSearchParams(window.location.search).get("name");
-if (initialQuery) {
-    searchInput.value = initialQuery;
-    searchGuests(initialQuery);
+// Restore whatever the URL describes after a reload: a past search, or a guest's seating map.
+if (window.location.search) {
+    renderFromUrl();
+}
+
+// Reflect the URL on screen: the list for a `?name=` search, or the map for a `?name=&guest=`
+// selection. Used on first load and on Back/Forward, where all we have is the query string.
+function renderFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name") ?? "";
+    const guestId = params.get("guest");
+    searchInput.value = name;
+
+    if (guestId) {
+        showSeatingMapById(name, Number(guestId));
+    } else {
+        searchGuests(name);
+    }
 }
 
 // Run a search and record it as a new history entry, so Back/Forward step between searches.
 function commitSearch(value) {
-    pushQuery(value);
+    pushState(value, null);
     searchGuests(value);
 }
 
-// Push the current search onto the browser history (skipping duplicates so an unchanged
-// query doesn't create a dead entry). Keeping it in the URL also lets a search survive a
-// reload and be shared.
-function pushQuery(value) {
-    const params = new URLSearchParams(window.location.search);
-    const current = params.get("name");
-    const next = value.trim().length === 0 ? null : value;
+// Push the current view onto the browser history: a `?name=` search, or a `?name=&guest=` map
+// selection. Skips duplicates so an unchanged state doesn't create a dead entry; keeping it in the
+// URL also lets a search — or a selected seat — survive a reload and be shared.
+function pushState(name, guestId) {
+    const current = new URLSearchParams(window.location.search);
+    const nextName = name.trim().length === 0 ? null : name;
+    const nextGuest = guestId === null ? null : String(guestId);
 
-    if (next === current) {
+    if (current.get("name") === nextName && current.get("guest") === nextGuest) {
         return;
     }
 
-    if (next === null) {
-        params.delete("name");
-    } else {
-        params.set("name", next);
+    const params = new URLSearchParams();
+    if (nextName !== null) {
+        params.set("name", nextName);
+    }
+    if (nextGuest !== null) {
+        params.set("guest", nextGuest);
     }
 
     const query = params.toString();
@@ -144,8 +157,30 @@ function renderList(guests) {
 // Picking one result fills the search bar with that name and shows the seating map with their seat lit up.
 function selectGuest(guest) {
     searchInput.value = guest.name;
-    pushQuery(guest.name);
+    pushState(guest.name, guest.id);
     renderSeatingMap(guest);
+}
+
+// Restore the seating map from the URL (reload or Back/Forward): all we have is the guest's name and
+// id, so re-run the name search and pick the matching guest out of the results to render their map.
+async function showSeatingMapById(name, guestId) {
+    try {
+        const response = await fetch(`/api/guests?name=${encodeURIComponent(name)}`, {
+            method: "GET"
+        });
+
+        const guests = await response.json();
+        const guest = guests.find((candidate) => candidate.id === guestId);
+
+        if (guest) {
+            renderSeatingMap(guest);
+        } else {
+            // The guest is gone (e.g. a stale or shared link) - fall back to the plain search results.
+            renderGuests(guests);
+        }
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 // Fetch the seating-map SVG once and cache it (same-origin, so it rides the existing session cookie).
