@@ -236,8 +236,9 @@ textarea {
 }
 
 /* The guest's chair: accent fill plus a gentle pulsing glow. A CSS fill overrides the circle's
-   inline fill attribute, since presentation attributes are the lowest-priority style. */
-.seating-map .seat-highlight {
+   inline fill attribute, since presentation attributes are the lowest-priority style. Shared by the
+   full map and the table close-up below it. */
+.seat-highlight {
     fill: var(--green);
     transform-box: fill-box;
     transform-origin: center;
@@ -257,22 +258,18 @@ textarea {
     }
 }
 
-/* On a phone the room fits better upright, so rotate it a quarter-turn. Sizing the (landscape) svg
-   to 651/302 of the container width makes its rotated height line up with the container width. */
-@media (orientation: portrait) {
-    .seating-map {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 302 / 651;
-    }
+/* The close-up beneath the full map: only the guest's own table, cropped tight and scaled up so the
+   lit seat is unmistakable without hunting across the whole room. */
+.seating-map-detail {
+    width: 100%;
+    max-width: 320px;
+    animation: grow-in 450ms ease-out both;
+}
 
-    .seating-map svg {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: calc(100% * 651 / 302);
-        transform: translate(-50%, -50%) rotate(90deg);
-    }
+.seating-map-detail svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 @keyframes grow-in {
@@ -303,8 +300,9 @@ textarea {
     .search-results-list,
     .search-result,
     .seating-map,
+    .seating-map-detail,
     .seating-map-caption,
-    .seating-map .seat-highlight,
+    .seat-highlight,
     .seating-map svg.is-focused .round-table,
     .seating-map svg.is-focused .rectangular-table {
         animation: none;

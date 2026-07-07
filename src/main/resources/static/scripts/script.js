@@ -53,6 +53,8 @@ function seatElementId(tableNumber, seatNumber) {
     return `table-${tableNumber}-seat-${seatNumber}`;
 }
 
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
 // Reflect the URL on screen: the list for a `?name=` search, or the map for a `?name=&guest=`
 // selection. Used on first load and on Back/Forward, where all we have is the query string.
 function renderFromUrl() {
@@ -221,22 +223,25 @@ async function renderSeatingMap(guest) {
     map.innerHTML = markup;
 
     const svg = map.querySelector("svg");
-    // Drop the intrinsic size so CSS controls how the map scales (and rotates on phones).
+    // Drop the intrinsic size so CSS controls how the map scales; it always stays landscape.
     svg.removeAttribute("width");
     svg.removeAttribute("height");
     svg.setAttribute("aria-hidden", "true");
 
     const chair = svg.querySelector(`#${seatElementId(guest.tableNumber, guest.seatNumber)}`);
+    const table = chair?.closest("g");
     if (chair) {
         svg.classList.add("is-focused");
         chair.classList.add("seat-highlight");
-        chair.closest("g")?.classList.add("table-highlight");
+        table?.classList.add("table-highlight");
     }
 
-    resultsContainer.replaceChildren(caption, map);
+    const detail = table ? renderTableDetail(table, guest) : null;
 
-    // Scroll the highlighted seat into view: on a phone the (rotated) map is taller than the
-    // screen, so the seat can start off-screen. Wait a frame so the map has been laid out first.
+    resultsContainer.replaceChildren(...[caption, map, detail].filter(Boolean));
+
+    // Scroll the highlighted seat into view: the full room can be wider than a small screen, so the
+    // seat may start off-screen. Wait a frame so the map has been laid out first.
     if (chair) {
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         requestAnimationFrame(() => {
@@ -247,6 +252,49 @@ async function renderSeatingMap(guest) {
             });
         });
     }
+}
+
+// Build a close-up beneath the full map showing only the guest's own table, with their seat lit up.
+// The table `<g>` is cloned out of the full map (so the shapes match exactly), dropped into a fresh
+// SVG, and cropped to the table by measuring its bounds once the browser has laid it out. The clone's
+// ids are stripped so they don't collide with the identical ids already on the full map.
+function renderTableDetail(table, guest) {
+    const detailSvg = document.createElementNS(SVG_NAMESPACE, "svg");
+    detailSvg.setAttribute("xmlns", SVG_NAMESPACE);
+    detailSvg.setAttribute("aria-hidden", "true");
+
+    const tableClone = table.cloneNode(true);
+    tableClone.classList.remove("table-highlight");
+
+    const chair = tableClone.querySelector(
+        `#${seatElementId(guest.tableNumber, guest.seatNumber)}`,
+    );
+    chair?.classList.add("seat-highlight");
+
+    tableClone.removeAttribute("id");
+    for (const node of tableClone.querySelectorAll("[id]")) {
+        node.removeAttribute("id");
+    }
+
+    detailSvg.append(tableClone);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "seating-map-detail";
+    wrapper.append(detailSvg);
+
+    // getBBox needs the element laid out, so crop to the table's bounds on the next frame.
+    requestAnimationFrame(() => {
+        const bounds = tableClone.getBBox();
+        const padding = 10;
+        detailSvg.setAttribute(
+            "viewBox",
+            `${bounds.x - padding} ${bounds.y - padding} ${bounds.width + padding * 2} ${
+                bounds.height + padding * 2
+            }`,
+        );
+    });
+
+    return wrapper;
 }
 
 function showMessage(text) {

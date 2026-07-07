@@ -17,9 +17,9 @@ import org.springframework.test.context.DynamicPropertySource
 /**
  * Real-browser smoke tests for the guest-search frontend: drive headless Chromium against the app on a
  * random port and assert on the rendered DOM. Covers the happy path plus the DOM/fetch branches the
- * GraalJS unit tests can't reach (deep-link restore, stale-link fallback, empty results) and the
- * responsive portrait-phone layout. One Chromium and one server are shared across the class; each test
- * uses a fresh authenticated context.
+ * GraalJS unit tests can't reach (deep-link restore, stale-link fallback, empty results), the table
+ * close-up beneath the map, and the landscape layout on a portrait phone. One Chromium and one server
+ * are shared across the class; each test uses a fresh authenticated context.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PlaywrightSmokeTest {
@@ -83,15 +83,15 @@ class PlaywrightSmokeTest {
     }
 
     @Test
-    fun `on a portrait phone viewport the seating map is rotated a quarter turn`() {
+    fun `on a portrait phone viewport the seating map stays landscape`() {
         val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
         newAuthenticatedContext(portrait).use { context ->
             val page = context.newPage()
             page.navigate("$baseUrl/?name=Charlotte&guest=8")
             page.waitForSelector(".seating-map svg")
 
-            // The portrait media query rotates the map svg a quarter-turn; its computed transform
-            // matrix(a, b, c, d, ...) then encodes rotate(90deg) as (a, b, c, d) ~= (0, 1, -1, 0).
+            // The map is never rotated any more, so its computed transform is either "none" or an
+            // identity matrix - never the (0, 1, -1, 0) quarter-turn the old portrait layout applied.
             val quarterTurned =
                 page.evaluate(
                     """
@@ -106,7 +106,22 @@ class PlaywrightSmokeTest {
                     """.trimIndent(),
                 )
 
-            assertThat(quarterTurned as Boolean).isTrue()
+            assertThat(quarterTurned as Boolean).isFalse()
+        }
+    }
+
+    @Test
+    fun `selecting a guest also renders a cropped close-up of their table`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Charlotte&guest=8")
+            page.waitForSelector(".seating-map-detail svg .seat-highlight")
+
+            // The close-up is cropped to the guest's table once the browser has laid it out, so it
+            // carries its own viewBox and lights up exactly one seat.
+            val viewBox = page.querySelector(".seating-map-detail svg")?.getAttribute("viewBox")
+            assertThat(viewBox).isNotNull()
+            assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
         }
     }
 
