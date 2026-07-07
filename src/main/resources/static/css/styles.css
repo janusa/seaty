@@ -27,6 +27,14 @@ body {
     font-family: Cormorant, serif;
     background-color: var(--background-color);
     color: var(--main-font-color);
+}
+
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
 
     background-image: url("/images/flower_bottom_left.png"), url("/images/flower_bottom_right.png");
 
@@ -39,9 +47,6 @@ body {
     background-position:
         left -30vw bottom -14vh,
         right -15vw bottom -20vh;
-
-    /* Keep the corner flowers pinned to the viewport while results scroll. */
-    background-attachment: fixed;
 }
 
 .container {
@@ -190,7 +195,7 @@ textarea {
 }
 
 /* Drop the page's corner flowers so the map has the space to itself. */
-.page:has(.search-result-container.map-view) {
+.page:has(.search-result-container.map-view)::before {
     background-image: none;
 }
 
