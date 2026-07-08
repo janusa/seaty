@@ -3,8 +3,11 @@ let timeoutId = null;
 // What's currently on screen, so an identical result doesn't re-render (and re-trigger the animations).
 let renderedKey = null;
 
-// The seating-map SVG markup, fetched once and reused for every selection.
-let seatingMapMarkup = null;
+// Monotonic id for the in-flight guest search, so a slow earlier response can't overwrite a newer one.
+let latestSearchId = 0;
+
+// The seating-map SVG, fetched and parsed once, then cloned for every selection.
+let seatingMapSvg = null;
 
 const MIN_SEARCH_LENGTH = 3;
 
@@ -93,12 +96,28 @@ async function searchGuests(value) {
         return;
     }
 
+    const requestId = ++latestSearchId;
+
     try {
         const response = await fetch(`/api/guests?name=${encodeURIComponent(query)}`, {
             method: "GET",
         });
 
+        // A newer search started while this one was in flight; drop this now-stale response.
+        if (requestId !== latestSearchId) {
+            return;
+        }
+
+        if (!response.ok) {
+            showMessage("No guests found with this name.");
+            return;
+        }
+
         const guests = await response.json();
+
+        if (requestId !== latestSearchId) {
+            return;
+        }
 
         renderGuests(guests);
     } catch (error) {
@@ -169,6 +188,12 @@ async function showSeatingMapById(name, guestId) {
             method: "GET",
         });
 
+        if (!response.ok) {
+            // e.g. a hand-edited deep link whose name is below the search minimum -> 400.
+            showMessage("No guests found with this name.");
+            return;
+        }
+
         const guests = await response.json();
         const guest = guests.find((candidate) => candidate.id === guestId);
 
@@ -183,26 +208,53 @@ async function showSeatingMapById(name, guestId) {
     }
 }
 
-// Fetch the seating-map SVG once and cache it (same-origin, so it rides the existing session cookie).
+// Fetch and parse the seating-map SVG once, then reuse it (same-origin, so it rides the existing
+// session cookie). Throws on a failed fetch or missing <svg> so a bad response is never cached.
 async function loadSeatingMap() {
-    if (seatingMapMarkup === null) {
+    if (seatingMapSvg === null) {
         const response = await fetch("/images/seating-map.svg");
-        seatingMapMarkup = await response.text();
+        if (!response.ok) {
+            throw new Error(`Failed to load the seating map (HTTP ${response.status}).`);
+        }
+
+        const holder = document.createElement("div");
+        holder.innerHTML = await response.text();
+        const svg = holder.querySelector("svg");
+        if (!svg) {
+            throw new Error("Seating-map markup contained no <svg> element.");
+        }
+
+        seatingMapSvg = svg;
     }
 
-    return seatingMapMarkup;
+    return seatingMapSvg;
 }
 
 // Show the whole room, spotlighting the guest's table and chair. Every chair carries an id of the
 // form `table-{tableNumber}-seat-{seatNumber}`, so the guest's own seat is found by composing that id.
 async function renderSeatingMap(guest) {
-    if (isAlreadyRendered(`map:${guest.id}`)) {
+    const key = `map:${guest.id}`;
+    if (isAlreadyRendered(key)) {
+        return;
+    }
+
+    let template;
+    try {
+        template = await loadSeatingMap();
+    } catch (error) {
+        console.error(error);
+        // Clear the dedup key so re-selecting this guest tries the fetch again.
+        renderedKey = null;
+        return;
+    }
+
+    // A newer view (Back/Forward or a fresh search) was requested while we awaited the map; don't
+    // clobber it with this now-stale render.
+    if (renderedKey !== key) {
         return;
     }
 
     resultsContainer.classList.add("map-view");
-
-    const markup = await loadSeatingMap();
 
     // The name/seat caption is the accessible source of truth (and the fallback if the seat isn't on the map).
     const caption = document.createElement("div");
@@ -220,13 +272,14 @@ async function renderSeatingMap(guest) {
 
     const map = document.createElement("div");
     map.className = "seating-map";
-    map.innerHTML = markup;
 
-    const svg = map.querySelector("svg");
+    // Clone the parsed map once per render so each view mutates its own copy.
+    const svg = template.cloneNode(true);
     // Drop the intrinsic size so CSS controls how the map scales; it always stays landscape.
     svg.removeAttribute("width");
     svg.removeAttribute("height");
     svg.setAttribute("aria-hidden", "true");
+    map.append(svg);
 
     const chair = svg.querySelector(`#${seatElementId(guest.tableNumber, guest.seatNumber)}`);
     const table = chair?.closest("g");
@@ -234,6 +287,12 @@ async function renderSeatingMap(guest) {
         svg.classList.add("is-focused");
         chair.classList.add("seat-highlight");
         table?.classList.add("table-highlight");
+    } else {
+        // The seat has no chair on the map: the caption still names it, but surface the data/map
+        // mismatch instead of silently showing an unlit room.
+        console.warn(
+            `No chair for table ${guest.tableNumber}, seat ${guest.seatNumber} on the seating map.`,
+        );
     }
 
     const detail = table ? renderTableDetail(table, guest) : null;
@@ -263,13 +322,9 @@ function renderTableDetail(table, guest) {
     detailSvg.setAttribute("xmlns", SVG_NAMESPACE);
     detailSvg.setAttribute("aria-hidden", "true");
 
+    // The clone is taken after the chair was lit on the full map, so it already carries
+    // seat-highlight; the table-highlight it also inherits is inert outside `.is-focused`.
     const tableClone = table.cloneNode(true);
-    tableClone.classList.remove("table-highlight");
-
-    const chair = tableClone.querySelector(
-        `#${seatElementId(guest.tableNumber, guest.seatNumber)}`,
-    );
-    chair?.classList.add("seat-highlight");
 
     labelTable(tableClone, guest.tableNumber);
 
@@ -303,6 +358,8 @@ function renderTableDetail(table, guest) {
 // rectangular head table. The centre is taken from the table body (the id-less circle/rect the seats
 // sit around), so the label lands dead centre whatever the table's shape.
 function labelTable(tableClone, tableNumber) {
+    // The map's only rectangular table is the head table; every round table is labelled with its
+    // number. The data carries no table role, so the shape class is the signal we have.
     const isHeadTable = tableClone.classList.contains("rectangular-table");
     const body = tableClone.querySelector(":scope > circle:not([id]), :scope > rect:not([id])");
     if (!body) {
@@ -315,7 +372,8 @@ function labelTable(tableClone, tableNumber) {
         centerX = Number(body.getAttribute("cx"));
         centerY = Number(body.getAttribute("cy"));
     } else {
-        centerX = Number(body.getAttribute("x")) + Number(body.getAttribute("width")) / 2;
+        const bodyWidth = Number(body.getAttribute("width"));
+        centerX = Number(body.getAttribute("x")) + bodyWidth / 2;
         centerY = Number(body.getAttribute("y")) + Number(body.getAttribute("height")) / 2;
     }
 
@@ -323,16 +381,14 @@ function labelTable(tableClone, tableNumber) {
     label.setAttribute("x", centerX);
     label.setAttribute("y", centerY);
     label.setAttribute("text-anchor", "middle");
-    // `central` centres on the font's em box, which leaves digits sitting low; renderTableDetail
-    // measures the laid-out glyphs and nudges `y` so the visible text is dead centre. This is just
-    // the starting point and the target to centre on.
+    // `central` aligns the text's centre on the y coordinate, so the label sits at the table's centre.
     label.setAttribute("dominant-baseline", "central");
-    label.dataset.centerY = centerY;
     label.classList.add("table-label");
+    label.textContent = isHeadTable ? "Head Table" : String(tableNumber);
+
     if (isHeadTable) {
         label.classList.add("head-table-label");
     }
-    label.textContent = isHeadTable ? "Head Table" : String(tableNumber);
 
     tableClone.append(label);
 }

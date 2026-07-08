@@ -223,7 +223,8 @@ textarea {
     animation: grow-in 450ms ease-out both;
 }
 
-.seating-map svg {
+.seating-map svg,
+.seating-map-detail svg {
     display: block;
     width: 100%;
     height: auto;
@@ -245,6 +246,8 @@ textarea {
    full map and the table close-up below it. */
 .seat-highlight {
     fill: var(--green);
+    /* Static glow rasterizes once; only the transform animates, so the loop stays on the compositor. */
+    filter: drop-shadow(0 0 4px var(--green));
     transform-box: fill-box;
     transform-origin: center;
     animation: seat-pulse 1.6s ease-in-out infinite;
@@ -254,12 +257,10 @@ textarea {
     0%,
     100% {
         transform: scale(1);
-        filter: drop-shadow(0 0 2px var(--green));
     }
 
     50% {
         transform: scale(1.6);
-        filter: drop-shadow(0 0 6px var(--green));
     }
 }
 
@@ -269,12 +270,6 @@ textarea {
     width: 100%;
     max-width: 320px;
     animation: grow-in 450ms ease-out both;
-}
-
-.seating-map-detail svg {
-    display: block;
-    width: 100%;
-    height: auto;
 }
 
 /* The table's name written across the middle of the close-up table. Font size is in user units, so it
