@@ -21,16 +21,14 @@ class AuthInterceptor(
             return true
         }
         val reason = if (session == null) "missing cookie" else "invalid cookie"
-        // Referer / Sec-Fetch-Site reveal the navigation context: a QR scan is an
-        // externally-initiated (cross-site) navigation, so a SameSite=Strict cookie is
-        // withheld on the redirect hop. Logged to diagnose the "401 after QR redirect" reports.
+        // Sec-Fetch-Site reveals the navigation context (e.g. cross-site for an externally
+        // initiated QR scan vs none for an address-bar visit), useful when diagnosing auth issues.
         log.warn(
-            "Rejected unauthenticated request {} {} from {} (reason={}, referer={}, secFetchSite={})",
+            "Rejected unauthenticated request {} {} from {} (reason={}, secFetchSite={})",
             request.method,
             request.requestURI,
             request.remoteAddr,
             reason,
-            request.getHeader("Referer") ?: "none",
             request.getHeader("Sec-Fetch-Site") ?: "none",
         )
         // sendError (not a bare status) triggers the error dispatch so the custom error page renders.

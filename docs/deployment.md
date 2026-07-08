@@ -23,6 +23,7 @@ automated — a merge to `main` ships to production automatically via a poll-bas
 | `/var/log/seaty/`                   | appuser            | rolling prod log (`seaty.log`)                                                            |
 | `/etc/systemd/system/seaty.service` | root               | the unit (source of truth: `deploy/seaty.service`)                                        |
 | `/etc/caddy/Caddyfile`              | root               | reverse proxy (source: `deploy/Caddyfile`)                                                |
+| `/var/log/caddy/access.log`         | caddy              | rolling edge access log (JSON; created by Caddy from the `log` directive)                  |
 | `/swapfile`                         | root `600`         | 2 GB swap (backstop for the 512 MB box)                                                   |
 
 ## Runtime facts
