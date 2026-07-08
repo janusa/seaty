@@ -12,7 +12,9 @@
     --line: #ddd9cb;
 }
 
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -41,16 +43,16 @@ body {
 }
 
 .status {
-    margin: 0 0 .9rem;
+    margin: 0 0 0.9rem;
     font-size: 3.4rem;
     font-weight: 400;
     line-height: 1;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     color: var(--sage);
 }
 
 h1 {
-    margin: 0 0 .65rem;
+    margin: 0 0 0.65rem;
     font-size: 1.45rem;
     font-weight: 400;
 }
@@ -73,12 +75,14 @@ p {
 
 .home {
     display: inline-block;
-    font-size: .95rem;
+    font-size: 0.95rem;
     color: var(--sage);
     text-decoration: none;
     padding-bottom: 2px;
-    border-bottom: 1px solid rgba(124, 138, 107, .4);
-    transition: color .2s, border-color .2s;
+    border-bottom: 1px solid rgba(124, 138, 107, 0.4);
+    transition:
+        color 0.2s,
+        border-color 0.2s;
 }
 
 .home:hover {
@@ -87,5 +91,7 @@ p {
 }
 
 @media (max-width: 400px) {
-    .status { font-size: 2.8rem; }
+    .status {
+        font-size: 2.8rem;
+    }
 }

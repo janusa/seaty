@@ -1,8 +1,8 @@
 :root {
-    --background-color: #F8F6F1;
-    --green: #6F8263;
-    --light-green: #A7B49A;
-    --main-font-color: #5D6D56;
+    --background-color: #f8f6f1;
+    --green: #6f8263;
+    --light-green: #a7b49a;
+    --main-font-color: #5d6d56;
 }
 
 *,
@@ -15,7 +15,8 @@ html {
     font-size: clamp(20px, 5vw, 38px);
 }
 
-html, body {
+html,
+body {
     margin: 0;
 }
 
@@ -26,18 +27,26 @@ html, body {
     font-family: Cormorant, serif;
     background-color: var(--background-color);
     color: var(--main-font-color);
+}
 
-    background-image: url("/images/flower_bottom_left.png"),
-    url("/images/flower_bottom_right.png");
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
 
-    background-repeat: no-repeat,
-    no-repeat;
+    background-image: url("/images/flower_bottom_left.png"), url("/images/flower_bottom_right.png");
 
-    background-size: 40vh auto,
-    40vh auto;
+    background-repeat: no-repeat, no-repeat;
 
-    background-position: left -30vw bottom -14vh,
-    right -15vw bottom -20vh;
+    background-size:
+        40vh auto,
+        40vh auto;
+
+    background-position:
+        left -30vw bottom -14vh,
+        right -15vw bottom -20vh;
 }
 
 .container {
@@ -54,6 +63,15 @@ main {
     flex-direction: column;
 }
 
+/* Keep the heading and search box in place while results scroll beneath them. */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--background-color);
+    padding-bottom: 1rem;
+}
+
 h1 {
     font-size: 2.5rem;
     font-weight: 200;
@@ -68,7 +86,6 @@ textarea {
 .search-container {
     height: 3rem;
     border: 1px solid var(--main-font-color);
-    border-radius: 1.5rem;
     border-radius: 1.5rem;
     padding: 0 1rem;
     display: flex;
@@ -124,7 +141,9 @@ textarea {
     flex-direction: column;
     background-color: var(--background-color);
     cursor: pointer;
-    transition: transform 150ms ease, box-shadow 150ms ease;
+    transition:
+        transform 150ms ease,
+        box-shadow 150ms ease;
 }
 
 .search-result:hover,
@@ -152,7 +171,7 @@ textarea {
     height: 50vh;
     max-height: clamp(1000px, 40vh, 1500px);
     width: auto;
-    opacity: .40;
+    opacity: 0.4;
 }
 
 .bottom-left {
@@ -167,76 +186,108 @@ textarea {
     bottom: 0;
 }
 
-/* Single-guest full-screen view: one match grows to fill the result area. */
-.search-result-container.single-view {
+/* Seating-map view: the whole room, with the selected guest's table and chair lit up. */
+.search-result-container.map-view {
     margin-bottom: 1rem;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
-/* Drop the page's corner flowers in this view so only the card's own botanicals show. */
-.page:has(.search-result-container.single-view) {
+/* Drop the page's corner flowers so the map has the space to itself. */
+.page:has(.search-result-container.map-view)::before {
     background-image: none;
 }
 
-.single-guest {
-    position: relative;
-    flex: 1;
+.seating-map-caption {
+    text-align: center;
+    animation: fade-in-up 500ms ease-out both;
+}
+
+.seating-map-name {
+    margin: 0;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+}
+
+.seating-map-seat {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 300;
+}
+
+.seating-map {
     width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    /* Match the gap below the search bar that the results list gets from a <ul>'s default 1em margin. */
-    margin-top: 1em;
-    border: 1px solid var(--main-font-color);
-    border-radius: 1.25rem;
-    background-color: var(--background-color);
+    max-width: 900px;
     animation: grow-in 450ms ease-out both;
 }
 
-.single-guest-content {
-    text-align: center;
-    z-index: 1;
+.seating-map svg,
+.seating-map-detail svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
-.single-guest-name {
-    margin: 0;
-    font-size: clamp(2.5rem, 11vw, 5.5rem);
-    font-weight: 300;
-    line-height: 1.05;
-    animation: fade-in-up 600ms ease-out 120ms both;
+/* When a seat is focused, fade the other tables back so the guest's own table stands out. */
+.seating-map svg.is-focused .round-table,
+.seating-map svg.is-focused .rectangular-table {
+    opacity: 0.3;
+    transition: opacity 300ms ease;
 }
 
-.single-guest-seat {
-    margin: 1rem 0 0;
-    font-size: clamp(1.1rem, 5vw, 2rem);
-    font-weight: 300;
-    animation: fade-in-up 600ms ease-out 240ms both;
+.seating-map svg.is-focused .table-highlight {
+    opacity: 1;
 }
 
-.single-guest-flower {
-    position: absolute;
-    width: auto;
-    opacity: 0;
-    pointer-events: none;
-    transform: rotate(var(--rot, 0deg));
-    animation: flower-appear 800ms ease-out var(--delay, 0ms) both;
+/* The guest's chair: accent fill plus a gentle pulsing glow. A CSS fill overrides the circle's
+   inline fill attribute, since presentation attributes are the lowest-priority style. Shared by the
+   full map and the table close-up below it. */
+.seat-highlight {
+    fill: var(--green);
+    /* Static glow rasterizes once; only the transform animates, so the loop stays on the compositor. */
+    filter: drop-shadow(0 0 4px var(--green));
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: seat-pulse 1.6s ease-in-out infinite;
 }
 
-.single-guest-flower--top-left {
-    top: 0;
-    left: -10vw;
-    height: 40%;
-    --flower-opacity: 0.6;
+@keyframes seat-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.6);
+    }
 }
 
-.single-guest-flower--bottom-right {
-    right: -20vw;
-    bottom: 0;
-    height: 60%;
-    --flower-opacity: 0.45;
-    --delay: 240ms;
+/* The close-up beneath the full map: only the guest's own table, cropped tight and scaled up so the
+   lit seat is unmistakable without hunting across the whole room. */
+.seating-map-detail {
+    width: 100%;
+    max-width: 320px;
+    animation: grow-in 450ms ease-out both;
+}
+
+/* The table's name written across the middle of the close-up table. Font size is in user units, so it
+   scales with the cropped viewBox. */
+.table-label {
+    fill: var(--main-font-color);
+    font-family: Cormorant, serif;
+    font-size: 14px;
+    font-weight: 500;
+
+    /* Cormorant defaults to old-style figures, whose descenders (3, 4, 5, 7, 9) throw off the
+       centring; lining figures share one baseline-to-cap-height box so every number sits alike. */
+    font-variant-numeric: lining-nums;
+}
+
+/* "Head Table" is far longer than a number, so shrink it to fit the rectangular table. */
+.head-table-label {
+    font-size: 8px;
 }
 
 @keyframes grow-in {
@@ -263,24 +314,16 @@ textarea {
     }
 }
 
-@keyframes flower-appear {
-    to {
-        opacity: var(--flower-opacity, 0.5);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .search-results-list,
-    .single-guest,
-    .single-guest-name,
-    .single-guest-seat,
-    .single-guest-flower,
-    .search-result {
+    .search-result,
+    .seating-map,
+    .seating-map-detail,
+    .seating-map-caption,
+    .seat-highlight,
+    .seating-map svg.is-focused .round-table,
+    .seating-map svg.is-focused .rectangular-table {
         animation: none;
         transition: none;
-    }
-
-    .single-guest-flower {
-        opacity: var(--flower-opacity, 0.5);
     }
 }

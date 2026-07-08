@@ -29,6 +29,16 @@
     <properties>
         <java.version>25</java.version>
         <kotlin.version>2.4.0</kotlin.version>
+        <!-- Biome frontend gate (see the maven-antrun-plugin 'biome' execution below). Pinned like the
+             rest of the toolchain so upgrades are deliberate. ${biome.asset} (the per-OS release binary)
+             is set by the auto-activated os profile at the bottom of this file; ${biome.binary} is the
+             cached filename (overridden to biome.exe on Windows). The binary is downloaded once into
+             ${biome.cache.dir} and reused across builds, mirroring the out-of-band Playwright/Chromium
+             install rather than shipping in any jar. -->
+        <biome.version>2.5.2</biome.version>
+        <biome.binary>biome</biome.binary>
+        <biome.cache.dir>${user.home}/.cache/biome/${biome.version}</biome.cache.dir>
+        <biome.url>https://github.com/biomejs/biome/releases/download/%40biomejs/biome%40${biome.version}/${biome.asset}</biome.url>
     </properties>
     <dependencies>
         <dependency>
@@ -107,6 +117,33 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.18.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- GraalJS: a modern (ECMAScript 2026) JavaScript engine embedded in the JVM, used to
+             unit-test the DOM-free logic in static/scripts/script.js without Node, a browser, or a
+             running server. Not managed by the Boot BOM, so the version is pinned; js-community is a
+             pom aggregator that pulls the engine + language runtime. -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>25.1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js-community</artifactId>
+            <version>25.1.3</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <!-- Playwright drives a real headless Chromium against the running app to smoke-test the frontend's
+             DOM/fetch behavior end to end - the paths the GraalJS unit tests can't reach. Test-scoped, so it
+             never enters the deploy jar. The Chromium binary is installed out of band, not by Maven: the first
+             local test run auto-downloads it; CI installs + caches it. -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.61.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Architecture tests: express the Controller -> Repository layering as
@@ -348,6 +385,79 @@
                             </target>
                         </configuration>
                     </execution>
+                    <!-- Biome frontend gate. Biome is a single, node-free native binary that both
+                         formats and lints the static frontend (JS + CSS) - the JS analogue of the
+                         Spotless+ktlint and detekt gates on the Kotlin side. There is no Maven plugin,
+                         so - like detekt - we drive it from an Ant target, bound to 'verify' alongside
+                         the other gates. The one target does three things in order:
+                           1. <get skipexisting> downloads the pinned per-OS binary into ${biome.cache.dir}
+                              on first use and reuses it thereafter (CI caches that dir), so the ~53 MB
+                              binary is provisioned out of band and never enters a jar - the same trade-off
+                              as the Playwright Chromium install.
+                           2. <chmod +x> makes it runnable (a no-op on Windows).
+                           3. <exec failonerror="true"> runs `biome ci`: formatter + linter checks with no
+                              writes; a non-zero exit (formatting drift or a lint finding) FAILS the build.
+                         Formatting basics (indent, EOL, final newline) come from .editorconfig via
+                         biome.json's useEditorconfig, the same single source ktlint reads; biome.json
+                         carries only the Biome-specific settings. Run standalone with
+                         `./mvnw antrun:run@biome`; auto-fix locally with Biome's check in write mode. -->
+                    <execution>
+                        <id>biome</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="biome" xmlns:unless="ant:unless">
+                                <mkdir dir="${biome.cache.dir}"/>
+                                <available file="${biome.cache.dir}/${biome.binary}" property="biome.present"/>
+                                <!-- Download to a temp file and move it into place only when the binary
+                                     is not already cached, so an interrupted download can never leave a
+                                     truncated file that a later run would reuse. -->
+                                <get unless:set="biome.present" src="${biome.url}"
+                                     dest="${biome.cache.dir}/${biome.binary}.part"/>
+                                <move unless:set="biome.present" file="${biome.cache.dir}/${biome.binary}.part"
+                                      tofile="${biome.cache.dir}/${biome.binary}"/>
+                                <chmod file="${biome.cache.dir}/${biome.binary}" perm="+x"/>
+                                <exec executable="${biome.cache.dir}/${biome.binary}"
+                                      dir="${project.basedir}" failonerror="true">
+                                    <arg value="ci"/>
+                                    <arg value="src/main/resources/static"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <!-- Auto-fix counterpart to the 'biome' gate, the JS/CSS analogue of `spotless:apply`.
+                         Deliberately bound to NO phase, so it never runs in a normal build - invoke it on
+                         demand with `./mvnw antrun:run@biome-fix`. Biome's check in write mode applies the
+                         formatter and every *safe* lint fix in place; findings whose only fix is unsafe
+                         (or that have none) are left for a human and reported, so failonerror is false
+                         (this is a fixer, not a gate). Re-provisions the binary the same way as the gate
+                         so it works even if the gate hasn't run yet. -->
+                    <execution>
+                        <id>biome-fix</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="biome-fix" xmlns:unless="ant:unless">
+                                <mkdir dir="${biome.cache.dir}"/>
+                                <available file="${biome.cache.dir}/${biome.binary}" property="biome.present"/>
+                                <!-- Same provision-once, atomic-move pattern as the 'biome' gate. -->
+                                <get unless:set="biome.present" src="${biome.url}"
+                                     dest="${biome.cache.dir}/${biome.binary}.part"/>
+                                <move unless:set="biome.present" file="${biome.cache.dir}/${biome.binary}.part"
+                                      tofile="${biome.cache.dir}/${biome.binary}"/>
+                                <chmod file="${biome.cache.dir}/${biome.binary}" perm="+x"/>
+                                <exec executable="${biome.cache.dir}/${biome.binary}"
+                                      dir="${project.basedir}" failonerror="false">
+                                    <arg value="check"/>
+                                    <arg value="--write"/>
+                                    <arg value="src/main/resources/static"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
@@ -359,5 +469,73 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Select the Biome release asset for the host OS/arch. Biome ships one static binary per
+         platform; exactly one of these profiles auto-activates and sets ${biome.asset} (and, on
+         Windows, the cached binary filename), which the biome gate's <get>/<exec> wiring consumes.
+         An unsupported OS/arch leaves ${biome.asset} unset and the download fails fast. -->
+    <profiles>
+        <profile>
+            <id>biome-macos-arm64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <biome.asset>biome-darwin-arm64</biome.asset>
+            </properties>
+        </profile>
+        <profile>
+            <id>biome-macos-x64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <biome.asset>biome-darwin-x64</biome.asset>
+            </properties>
+        </profile>
+        <profile>
+            <id>biome-linux-x64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <biome.asset>biome-linux-x64</biome.asset>
+            </properties>
+        </profile>
+        <profile>
+            <id>biome-linux-arm64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <biome.asset>biome-linux-arm64</biome.asset>
+            </properties>
+        </profile>
+        <profile>
+            <id>biome-windows-x64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <biome.asset>biome-win32-x64.exe</biome.asset>
+                <biome.binary>biome.exe</biome.binary>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

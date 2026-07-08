@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="651" height="302" viewBox="0 0 651 302">
+<rect width="100%" height="100%" fill="#F8F6F1" />
+
+<!-- Room outline -->
+
+<path d="M 2,80 H 493 V 30 H 649 V 80 298 H 491 V 272 L 456,244 H 2 Z" fill="none" stroke="#5D6D56" stroke-width="4" stroke-linejoin="miter"/>
+
+<!-- Wall details -->
+<rect x="0" y="88" width="4" height="152" fill="#E5EBE1" />
+<rect x="24" y="78" width="145" height="4" fill="#E5EBE1"/>
+<rect x="169" y="78" width="24" height="4" fill="#5D6D56"/>
+<rect x="194" y="78" width="150" height="4" fill="#E5EBE1"/>
+<rect x="344" y="78" width="13" height="4" fill="#5D6D56"/>
+<rect x="358" y="78" width="114" height="4" fill="#E5EBE1"/>
+<rect x="472" y="78" width="22" height="4" fill="#5D6D56"/>
+<rect x="498" y="28" width="33" height="4" fill="#E5EBE1"/>
+<rect x="553" y="27" width="45" height="6" fill="#F8F6F1"/>
+<rect x="612" y="28" width="33" height="4" fill="#E5EBE1"/>
+<rect x="647" y="40" width="4" height="28" fill="#E5EBE1"/>
+<rect x="491" y="40" width="4" height="28" fill="#E5EBE1"/>
+
+<!-- Columns / blocked areas -->
+<rect x="204" y="226" width="15" height="17" fill="#5D6D56"/>
+<rect x="495" y="182" width="9" height="20" fill="#5D6D56"/>
+<rect x="636" y="182" width="9" height="20" fill="#5D6D56"/>
+
+<!-- Door -->
+<line x1="553" y1="29" x2="587" y2="3" stroke="#5D6D56" stroke-width="4" stroke-linecap="square"/>
+
+<!-- Top row: small round tables, 8 chairs each -->
+<g class="round-table" id="top-round-table-1">
+<circle id="table-1-seat-1" cx="30.0" cy="100.0" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-2" cx="45.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-3" cx="52.0" cy="122.0" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-4" cx="45.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-5" cx="30.0" cy="144.0" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-6" cx="14.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-7" cx="8.0" cy="122.0" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-1-seat-8" cx="14.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="30.0" cy="122.0" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-2">
+<circle id="table-2-seat-1" cx="102" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-2" cx="117.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-3" cx="124" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-4" cx="117.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-5" cx="102" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-6" cx="86.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-7" cx="80" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-2-seat-8" cx="86.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="102" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-3">
+<circle id="table-3-seat-1" cx="174" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-2" cx="189.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-3" cx="196" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-4" cx="189.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-5" cx="174" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-6" cx="158.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-7" cx="152" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-3-seat-8" cx="158.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="174" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-4">
+<circle id="table-4-seat-1" cx="246" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-2" cx="261.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-3" cx="268" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-4" cx="261.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-5" cx="246" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-6" cx="230.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-7" cx="224" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-4-seat-8" cx="230.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="246" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-5">
+<circle id="table-5-seat-1" cx="318" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-2" cx="333.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-3" cx="340" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-4" cx="333.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-5" cx="318" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-6" cx="302.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-7" cx="296" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-5-seat-8" cx="302.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="318" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-6">
+<circle id="table-6-seat-1" cx="390" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-2" cx="405.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-3" cx="412" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-4" cx="405.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-5" cx="390" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-6" cx="374.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-7" cx="368" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-6-seat-8" cx="374.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="390" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-7">
+<circle id="table-7-seat-1" cx="462" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-2" cx="477.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-3" cx="484" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-4" cx="477.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-5" cx="462" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-6" cx="446.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-7" cx="440" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-7-seat-8" cx="446.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="462" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-8">
+<circle id="table-8-seat-1" cx="534" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-2" cx="549.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-3" cx="556" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-4" cx="549.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-5" cx="534" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-6" cx="518.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-7" cx="512" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-8-seat-8" cx="518.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="534" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="top-round-table-9">
+<circle id="table-9-seat-1" cx="606" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-2" cx="621.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-3" cx="628" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-4" cx="621.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-5" cx="606" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-6" cx="590.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-7" cx="584" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-9-seat-8" cx="590.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="606" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+
+<!-- Bottom row: small round tables have 8 chairs; large round tables have 10 chairs -->
+<g class="round-table" id="bottom-large-round-table-1">
+<circle id="table-10-seat-1" cx="36" cy="168" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-2" cx="51.9" cy="173.2" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-3" cx="61.7" cy="186.7" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-4" cx="61.7" cy="203.3" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-5" cx="51.9" cy="216.8" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-6" cx="36" cy="222" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-7" cx="20.1" cy="216.8" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-8" cx="10.3" cy="203.3" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-9" cx="10.3" cy="186.7" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-10-seat-10" cx="20.1" cy="173.2" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="36" cy="195" r="18" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-small-round-table-2">
+<circle id="table-11-seat-1" cx="110" cy="173" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-2" cx="125.6" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-3" cx="132" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-4" cx="125.6" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-5" cx="110" cy="217" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-6" cx="94.4" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-7" cx="88" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-11-seat-8" cx="94.4" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="110" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-small-round-table-3">
+<circle id="table-12-seat-1" cx="174" cy="173" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-2" cx="189.6" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-3" cx="196" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-4" cx="189.6" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-5" cx="174" cy="217" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-6" cx="158.4" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-7" cx="152" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-12-seat-8" cx="158.4" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="174" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-small-round-table-4">
+<circle id="table-13-seat-1" cx="366" cy="173" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-2" cx="381.6" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-3" cx="388" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-4" cx="381.6" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-5" cx="366" cy="217" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-6" cx="350.4" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-7" cx="344" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-13-seat-8" cx="350.4" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="366" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-large-round-table-5">
+<circle id="table-14-seat-1" cx="442" cy="168" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-2" cx="457.9" cy="173.2" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-3" cx="467.7" cy="186.7" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-4" cx="467.7" cy="203.3" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-5" cx="457.9" cy="216.8" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-6" cx="442" cy="222" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-7" cx="426.1" cy="216.8" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-8" cx="416.3" cy="203.3" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-9" cx="416.3" cy="186.7" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-14-seat-10" cx="426.1" cy="173.2" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="442" cy="195" r="18" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-small-round-table-6">
+<circle id="table-15-seat-1" cx="534" cy="173" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-2" cx="549.6" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-3" cx="556" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-4" cx="549.6" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-5" cx="534" cy="217" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-6" cx="518.4" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-7" cx="512" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-15-seat-8" cx="518.4" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="534" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+<g class="round-table" id="bottom-small-round-table-7">
+<circle id="table-16-seat-1" cx="606" cy="173" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-2" cx="621.6" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-3" cx="628" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-4" cx="621.6" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-5" cx="606" cy="217" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-6" cx="590.4" cy="210.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-7" cx="584" cy="195" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-16-seat-8" cx="590.4" cy="179.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle cx="606" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
+</g>
+
+<!-- Rectangular head table: 6 chairs on each long side, none on the short sides -->
+<g class="rectangular-table" id="rectangular-table">
+<circle id="table-17-seat-1" cx="236" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-2" cx="250" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-3" cx="264" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-4" cx="278" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-5" cx="292" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-6" cx="306" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-7" cx="236" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-8" cx="250" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-9" cx="264" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-10" cx="278" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-11" cx="292" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-12" cx="306" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<rect x="232" y="186" width="78" height="24" fill="#CFDECA" />
+</g>
+
+<!-- Removed marked wall segments on the lower-right side -->
+<line x1="490.95181" y1="298" x2="647.04822" y2="298" stroke="#F8F6F1" stroke-width="8" stroke-linecap="square" />
+
+<!-- Removed only the marked vertical wall segment on the right-hand side -->
+<line x1="649" y1="84" x2="649" y2="240" stroke="#F8F6F1" stroke-width="8" stroke-linecap="square" />
+
+<!-- Reception notice in the bottom-right alcove -->
+<text x="570" y="275" fill="#5D6D56" font-family="sans-serif" font-size="14" font-style="italic" text-anchor="middle" dominant-baseline="middle">Entrance</text>
+</svg>

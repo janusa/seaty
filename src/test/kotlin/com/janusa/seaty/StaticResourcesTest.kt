@@ -19,6 +19,10 @@ import org.springframework.http.MediaType
 class StaticResourcesTest : AbstractWebIntegrationTest() {
     private val css = MediaType.valueOf("text/css")
 
+    // Spring has served ".js" as either "application/javascript" or "text/javascript" across versions;
+    // accept both so the test guards "is it JavaScript" without pinning the exact spelling.
+    private val javascript = listOf("text/javascript", "application/javascript").map(MediaType::valueOf)
+
     @Test
     fun `welcome page route is mapped`() {
         restClient
@@ -51,6 +55,58 @@ class StaticResourcesTest : AbstractWebIntegrationTest() {
             .isOk()
             .expectHeader()
             .contentTypeCompatibleWith(css)
+    }
+
+    @Test
+    fun `serves the script as javascript`() {
+        val contentType =
+            restClient
+                .get()
+                .uri("/scripts/script.js")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(String::class.java)
+                .returnResult()
+                .responseHeaders.contentType
+
+        assertThat(contentType)
+            .describedAs("content type of /scripts/script.js")
+            .isNotNull()
+        assertThat(javascript.any { contentType!!.isCompatibleWith(it) })
+            .describedAs("content type %s is a JavaScript type", contentType)
+            .isTrue()
+    }
+
+    @Test
+    fun `index page references a working script`() {
+        val html =
+            restClient
+                .get()
+                .uri("/index.html")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(String::class.java)
+                .returnResult()
+                .responseBody
+
+        val doc = Jsoup.parse(html ?: "")
+
+        // Resolve the script the page references and confirm it is actually served
+        // (guards against a broken <script src> after future edits).
+        val script = doc.selectFirst("script[src]")
+        assertThat(script).isNotNull()
+        val src = script!!.attr("src")
+        assertThat(src).isNotBlank()
+        val scriptPath = if (src.startsWith("/")) src else "/$src"
+
+        restClient
+            .get()
+            .uri(scriptPath)
+            .exchange()
+            .expectStatus()
+            .isOk()
     }
 
     @Test
