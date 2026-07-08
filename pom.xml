@@ -408,10 +408,16 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target name="biome">
+                            <target name="biome" xmlns:unless="ant:unless">
                                 <mkdir dir="${biome.cache.dir}"/>
-                                <get src="${biome.url}" dest="${biome.cache.dir}/${biome.binary}"
-                                     skipexisting="true" usetimestamp="true"/>
+                                <available file="${biome.cache.dir}/${biome.binary}" property="biome.present"/>
+                                <!-- Download to a temp file and move it into place only when the binary
+                                     is not already cached, so an interrupted download can never leave a
+                                     truncated file that a later run would reuse. -->
+                                <get unless:set="biome.present" src="${biome.url}"
+                                     dest="${biome.cache.dir}/${biome.binary}.part"/>
+                                <move unless:set="biome.present" file="${biome.cache.dir}/${biome.binary}.part"
+                                      tofile="${biome.cache.dir}/${biome.binary}"/>
                                 <chmod file="${biome.cache.dir}/${biome.binary}" perm="+x"/>
                                 <exec executable="${biome.cache.dir}/${biome.binary}"
                                       dir="${project.basedir}" failonerror="true">
@@ -434,10 +440,14 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target name="biome-fix">
+                            <target name="biome-fix" xmlns:unless="ant:unless">
                                 <mkdir dir="${biome.cache.dir}"/>
-                                <get src="${biome.url}" dest="${biome.cache.dir}/${biome.binary}"
-                                     skipexisting="true" usetimestamp="true"/>
+                                <available file="${biome.cache.dir}/${biome.binary}" property="biome.present"/>
+                                <!-- Same provision-once, atomic-move pattern as the 'biome' gate. -->
+                                <get unless:set="biome.present" src="${biome.url}"
+                                     dest="${biome.cache.dir}/${biome.binary}.part"/>
+                                <move unless:set="biome.present" file="${biome.cache.dir}/${biome.binary}.part"
+                                      tofile="${biome.cache.dir}/${biome.binary}"/>
                                 <chmod file="${biome.cache.dir}/${biome.binary}" perm="+x"/>
                                 <exec executable="${biome.cache.dir}/${biome.binary}"
                                       dir="${project.basedir}" failonerror="false">
