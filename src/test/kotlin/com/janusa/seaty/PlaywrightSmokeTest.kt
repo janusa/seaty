@@ -32,6 +32,7 @@ class PlaywrightSmokeTest {
         options: Browser.NewContextOptions = Browser.NewContextOptions(),
     ): BrowserContext {
         val context = browser.newContext(options)
+        context.setDefaultTimeout(DEFAULT_TIMEOUT_MS)
         context.addCookies(listOf(Cookie("session", TEST_SECRET).setUrl(baseUrl)))
         return context
     }
@@ -54,7 +55,7 @@ class PlaywrightSmokeTest {
     fun `a deep link to a selected guest restores the seating map on load`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=8")
+            page.navigate("$baseUrl/?name=Charlotte&guest=26")
             page.waitForSelector(".seating-map .seat-highlight")
             assertThat(page.querySelector(".seating-map-name")?.textContent()).isEqualTo("Charlotte")
         }
@@ -87,7 +88,7 @@ class PlaywrightSmokeTest {
         val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
         newAuthenticatedContext(portrait).use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=8")
+            page.navigate("$baseUrl/?name=Charlotte&guest=26")
             page.waitForSelector(".seating-map svg")
 
             // The map is never rotated any more, so its computed transform is either "none" or an
@@ -114,7 +115,7 @@ class PlaywrightSmokeTest {
     fun `selecting a guest also renders a cropped close-up of their table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=8")
+            page.navigate("$baseUrl/?name=Charlotte&guest=26")
             page.waitForSelector(".seating-map-detail svg .seat-highlight")
 
             // The close-up is cropped to the guest's table once the browser has laid it out, so it
@@ -123,8 +124,8 @@ class PlaywrightSmokeTest {
             assertThat(viewBox).isNotNull()
             assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
 
-            // A round table is labelled with its number in the middle of the close-up (guest 8 is at table 1).
-            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("1")
+            // A round table is labelled with its number in the middle of the close-up (guest 26 is at table 4).
+            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("4")
         }
     }
 
@@ -144,6 +145,10 @@ class PlaywrightSmokeTest {
 
     private companion object {
         const val TEST_SECRET = "123"
+
+        // Keep the browser waits short so a broken selector fails fast instead of hanging on
+        // Playwright's 30s default and dragging out the feedback loop.
+        const val DEFAULT_TIMEOUT_MS = 2_000.0
 
         private lateinit var playwright: Playwright
         private lateinit var browser: Browser
