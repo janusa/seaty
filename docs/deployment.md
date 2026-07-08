@@ -149,6 +149,66 @@ could be pruned; a proper `-P DROP` default policy (with a tested rollback) woul
 additive catch-all. Granting IPv6 or non-Norway access is a deliberate access-policy change at both
 the iptables and cloud-firewall layers.
 
+### Apple iCloud Private Relay egress allowlist
+
+The `norway` ipset is built from Norwegian ISP netblocks, so it does **not** contain the IPs that
+**iCloud Private Relay** (and similar CDN-fronted VPNs) egress from. A Norway-based iPhone with
+Private Relay on connects to the site from a relay operated by Apple's partners (Cloudflare, Fastly,
+Akamai) — those IPs *geolocate* to Norway but are Cloudflare/Fastly/Akamai allocations, so they fall
+through the allowlist and get dropped. (The site is IPv4-only — A record, no AAAA — so this always
+happens over IPv4 regardless of the client's IPv6.) A second ipset, `apple_relay_no`, holds Apple's
+published Norway egress ranges, and iptables accepts 80/443 from it (each ACCEPT sits just before the
+matching catch-all DROP). Rebuild it from Apple's list when relay access breaks again (Apple
+reshuffles these ranges):
+
+```bash
+curl -s https://mask-api.icloud.com/egress-ip-ranges.csv -o /tmp/relay.csv
+awk -F, '$2=="NO" && $1 !~ /:/ {print $1}' /tmp/relay.csv | sort -u > /tmp/relay_no_v4.txt
+sudo ipset create apple_relay_no hash:net family inet -exist
+while read -r net; do [ -n "$net" ] && sudo ipset add apple_relay_no "$net" -exist; done < /tmp/relay_no_v4.txt
+# ACCEPT 80/443 from the set, inserted before the catch-all DROP (skip if the rules already exist):
+for port in 443 80; do
+  sudo iptables -C INPUT -p tcp -m set --match-set apple_relay_no src --dport "$port" -j ACCEPT 2>/dev/null || \
+    sudo iptables -I INPUT "$(sudo iptables -L INPUT --line-numbers -n | awk -v p="dpt:$port" '/DROP/ && $0 ~ p {print $1; exit}')" \
+      -p tcp -m set --match-set apple_relay_no src --dport "$port" -j ACCEPT
+done
+sudo ipset save > /etc/ipset.rules   # persists both sets; ipset-restore.service loads it before netfilter-persistent
+sudo netfilter-persistent save       # persists the iptables ACCEPT rules
+```
+
+Only the IPv4 `NO` rows are loaded (the site has no AAAA). This is a deliberate widening of the
+allowlist beyond Norwegian ISPs; it admits anyone using Apple's Norway relay egress, not just the
+Norwegian public.
+
+### Temporary open access for an event
+
+Guests physically at a Norwegian venue can still be **outside** the allowlist: a foreign SIM on
+roaming is usually *home-routed*, so it egresses from the guest's home country, not Norway (and
+non-Apple VPNs egress wherever they exit). Venue Wi-Fi or a Norwegian SIM works; roaming data
+typically does not. For a one-off event where that matters, drop the geo-restriction for the
+duration, then re-lock.
+
+The rules go in at position **1** (top of the chain). iptables matches top-to-bottom, first
+terminating target wins, so an `ACCEPT` above the catch-all `DROP` beats it — this is about
+*position*, not insertion order (`-A` would append *below* the DROP and never be reached). The
+`norway`/`apple_relay_no` allow rules stay underneath, so re-locking is just deleting these two
+lines. The app's auth secret still gates all guest data; opening the firewall only exposes the
+login/`401` surface.
+
+```bash
+# Open at the start of the event (80 too, so the bare-domain http->https redirect works):
+sudo iptables -I INPUT 1 -p tcp --dport 443 -j ACCEPT
+sudo iptables -I INPUT 1 -p tcp --dport 80  -j ACCEPT
+
+# Re-lock afterward:
+sudo iptables -D INPUT -p tcp --dport 443 -j ACCEPT
+sudo iptables -D INPUT -p tcp --dport 80  -j ACCEPT
+```
+
+Intentionally **not** persisted (`netfilter-persistent save` is not run), so a reboot mid-event
+auto-reverts to Norway-locked; the trade-off is that such a reboot re-locks it and the open command
+must be re-run.
+
 ## Continuous deployment
 
 A merge to `main` reaches production automatically. Because the firewall is a Norway-only allowlist
