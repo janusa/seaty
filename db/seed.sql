@@ -147,9 +147,11 @@ VALUES
        ('Zara'), -- guest id = 141
        ('Zoe'), -- guest id = 142
        ('Zoltan'), -- guest id = 143
-       ('Zuri'); -- guest id = 144
+       ('Zuri'), -- guest id = 144
+       ('Aada'), -- guest id = 145
+       ('Bruno'); -- guest id = 146
 
--- 17 tables, matching the seating map.
+-- 18 tables, matching the seating map. Table 18 is the head table (shown as "Head Table" in the UI).
 INSERT INTO dining_table (table_number)
 VALUES (1),
        (2),
@@ -167,11 +169,12 @@ VALUES (1),
        (14),
        (15),
        (16),
-       (17);
+       (17),
+       (18);
 
 -- seat_number restarts at 1 for each table, matching the map's per-table chair ids
 -- (table-{table_number}-seat-{seat_number}). Chair counts match the map: 8 for a small
--- round table, 10 for a large round table, 12 for the rectangular head table.
+-- round table, 10 for a large round table, 6 for the rectangular head table (one side only).
 INSERT INTO seat(seat_number, table_id)
 VALUES
     -- table 1
@@ -183,7 +186,7 @@ VALUES
     (6, 1), -- seat id = 006
     (7, 1), -- seat id = 007
     (8, 1), -- seat id = 008
-    -- table 2
+    -- table 2 (large round)
     (1, 2), -- seat id = 009
     (2, 2), -- seat id = 010
     (3, 2), -- seat id = 011
@@ -192,81 +195,81 @@ VALUES
     (6, 2), -- seat id = 014
     (7, 2), -- seat id = 015
     (8, 2), -- seat id = 016
+    (9, 2), -- seat id = 017
+    (10, 2), -- seat id = 018
     -- table 3
-    (1, 3), -- seat id = 017
-    (2, 3), -- seat id = 018
-    (3, 3), -- seat id = 019
-    (4, 3), -- seat id = 020
-    (5, 3), -- seat id = 021
-    (6, 3), -- seat id = 022
-    (7, 3), -- seat id = 023
-    (8, 3), -- seat id = 024
+    (1, 3), -- seat id = 019
+    (2, 3), -- seat id = 020
+    (3, 3), -- seat id = 021
+    (4, 3), -- seat id = 022
+    (5, 3), -- seat id = 023
+    (6, 3), -- seat id = 024
+    (7, 3), -- seat id = 025
+    (8, 3), -- seat id = 026
     -- table 4
-    (1, 4), -- seat id = 025
-    (2, 4), -- seat id = 026
-    (3, 4), -- seat id = 027
-    (4, 4), -- seat id = 028
-    (5, 4), -- seat id = 029
-    (6, 4), -- seat id = 030
-    (7, 4), -- seat id = 031
-    (8, 4), -- seat id = 032
+    (1, 4), -- seat id = 027
+    (2, 4), -- seat id = 028
+    (3, 4), -- seat id = 029
+    (4, 4), -- seat id = 030
+    (5, 4), -- seat id = 031
+    (6, 4), -- seat id = 032
+    (7, 4), -- seat id = 033
+    (8, 4), -- seat id = 034
     -- table 5
-    (1, 5), -- seat id = 033
-    (2, 5), -- seat id = 034
-    (3, 5), -- seat id = 035
-    (4, 5), -- seat id = 036
-    (5, 5), -- seat id = 037
-    (6, 5), -- seat id = 038
-    (7, 5), -- seat id = 039
-    (8, 5), -- seat id = 040
+    (1, 5), -- seat id = 035
+    (2, 5), -- seat id = 036
+    (3, 5), -- seat id = 037
+    (4, 5), -- seat id = 038
+    (5, 5), -- seat id = 039
+    (6, 5), -- seat id = 040
+    (7, 5), -- seat id = 041
+    (8, 5), -- seat id = 042
     -- table 6
-    (1, 6), -- seat id = 041
-    (2, 6), -- seat id = 042
-    (3, 6), -- seat id = 043
-    (4, 6), -- seat id = 044
-    (5, 6), -- seat id = 045
-    (6, 6), -- seat id = 046
-    (7, 6), -- seat id = 047
-    (8, 6), -- seat id = 048
+    (1, 6), -- seat id = 043
+    (2, 6), -- seat id = 044
+    (3, 6), -- seat id = 045
+    (4, 6), -- seat id = 046
+    (5, 6), -- seat id = 047
+    (6, 6), -- seat id = 048
+    (7, 6), -- seat id = 049
+    (8, 6), -- seat id = 050
     -- table 7
-    (1, 7), -- seat id = 049
-    (2, 7), -- seat id = 050
-    (3, 7), -- seat id = 051
-    (4, 7), -- seat id = 052
-    (5, 7), -- seat id = 053
-    (6, 7), -- seat id = 054
-    (7, 7), -- seat id = 055
-    (8, 7), -- seat id = 056
+    (1, 7), -- seat id = 051
+    (2, 7), -- seat id = 052
+    (3, 7), -- seat id = 053
+    (4, 7), -- seat id = 054
+    (5, 7), -- seat id = 055
+    (6, 7), -- seat id = 056
+    (7, 7), -- seat id = 057
+    (8, 7), -- seat id = 058
     -- table 8
-    (1, 8), -- seat id = 057
-    (2, 8), -- seat id = 058
-    (3, 8), -- seat id = 059
-    (4, 8), -- seat id = 060
-    (5, 8), -- seat id = 061
-    (6, 8), -- seat id = 062
-    (7, 8), -- seat id = 063
-    (8, 8), -- seat id = 064
+    (1, 8), -- seat id = 059
+    (2, 8), -- seat id = 060
+    (3, 8), -- seat id = 061
+    (4, 8), -- seat id = 062
+    (5, 8), -- seat id = 063
+    (6, 8), -- seat id = 064
+    (7, 8), -- seat id = 065
+    (8, 8), -- seat id = 066
     -- table 9
-    (1, 9), -- seat id = 065
-    (2, 9), -- seat id = 066
-    (3, 9), -- seat id = 067
-    (4, 9), -- seat id = 068
-    (5, 9), -- seat id = 069
-    (6, 9), -- seat id = 070
-    (7, 9), -- seat id = 071
-    (8, 9), -- seat id = 072
+    (1, 9), -- seat id = 067
+    (2, 9), -- seat id = 068
+    (3, 9), -- seat id = 069
+    (4, 9), -- seat id = 070
+    (5, 9), -- seat id = 071
+    (6, 9), -- seat id = 072
+    (7, 9), -- seat id = 073
+    (8, 9), -- seat id = 074
     -- table 10
-    (1, 10), -- seat id = 073
-    (2, 10), -- seat id = 074
-    (3, 10), -- seat id = 075
-    (4, 10), -- seat id = 076
-    (5, 10), -- seat id = 077
-    (6, 10), -- seat id = 078
-    (7, 10), -- seat id = 079
-    (8, 10), -- seat id = 080
-    (9, 10), -- seat id = 081
-    (10, 10), -- seat id = 082
-    -- table 11
+    (1, 10), -- seat id = 075
+    (2, 10), -- seat id = 076
+    (3, 10), -- seat id = 077
+    (4, 10), -- seat id = 078
+    (5, 10), -- seat id = 079
+    (6, 10), -- seat id = 080
+    (7, 10), -- seat id = 081
+    (8, 10), -- seat id = 082
+    -- table 11 (large round)
     (1, 11), -- seat id = 083
     (2, 11), -- seat id = 084
     (3, 11), -- seat id = 085
@@ -275,35 +278,35 @@ VALUES
     (6, 11), -- seat id = 088
     (7, 11), -- seat id = 089
     (8, 11), -- seat id = 090
+    (9, 11), -- seat id = 091
+    (10, 11), -- seat id = 092
     -- table 12
-    (1, 12), -- seat id = 091
-    (2, 12), -- seat id = 092
-    (3, 12), -- seat id = 093
-    (4, 12), -- seat id = 094
-    (5, 12), -- seat id = 095
-    (6, 12), -- seat id = 096
-    (7, 12), -- seat id = 097
-    (8, 12), -- seat id = 098
+    (1, 12), -- seat id = 093
+    (2, 12), -- seat id = 094
+    (3, 12), -- seat id = 095
+    (4, 12), -- seat id = 096
+    (5, 12), -- seat id = 097
+    (6, 12), -- seat id = 098
+    (7, 12), -- seat id = 099
+    (8, 12), -- seat id = 100
     -- table 13
-    (1, 13), -- seat id = 099
-    (2, 13), -- seat id = 100
-    (3, 13), -- seat id = 101
-    (4, 13), -- seat id = 102
-    (5, 13), -- seat id = 103
-    (6, 13), -- seat id = 104
-    (7, 13), -- seat id = 105
-    (8, 13), -- seat id = 106
+    (1, 13), -- seat id = 101
+    (2, 13), -- seat id = 102
+    (3, 13), -- seat id = 103
+    (4, 13), -- seat id = 104
+    (5, 13), -- seat id = 105
+    (6, 13), -- seat id = 106
+    (7, 13), -- seat id = 107
+    (8, 13), -- seat id = 108
     -- table 14
-    (1, 14), -- seat id = 107
-    (2, 14), -- seat id = 108
-    (3, 14), -- seat id = 109
-    (4, 14), -- seat id = 110
-    (5, 14), -- seat id = 111
-    (6, 14), -- seat id = 112
-    (7, 14), -- seat id = 113
-    (8, 14), -- seat id = 114
-    (9, 14), -- seat id = 115
-    (10, 14), -- seat id = 116
+    (1, 14), -- seat id = 109
+    (2, 14), -- seat id = 110
+    (3, 14), -- seat id = 111
+    (4, 14), -- seat id = 112
+    (5, 14), -- seat id = 113
+    (6, 14), -- seat id = 114
+    (7, 14), -- seat id = 115
+    (8, 14), -- seat id = 116
     -- table 15
     (1, 15), -- seat id = 117
     (2, 15), -- seat id = 118
@@ -331,13 +334,16 @@ VALUES
     (6, 17), -- seat id = 138
     (7, 17), -- seat id = 139
     (8, 17), -- seat id = 140
-    (9, 17), -- seat id = 141
-    (10, 17), -- seat id = 142
-    (11, 17), -- seat id = 143
-    (12, 17); -- seat id = 144
+    -- table 18 (rectangular head table)
+    (1, 18), -- seat id = 141
+    (2, 18), -- seat id = 142
+    (3, 18), -- seat id = 143
+    (4, 18), -- seat id = 144
+    (5, 18), -- seat id = 145
+    (6, 18); -- seat id = 146
 
 -- Seat each guest in order: the k-th guest (by id) takes the k-th seat, walking the tables in order
--- and the seats within each table. Pairing by row position rather than transcribing 144 literal
+-- and the seats within each table. Pairing by row position rather than transcribing 152 literal
 -- (guest_id, seat_id) rows keeps the data correct even if the guest or seat rows above are
 -- reordered or renumbered.
 INSERT INTO seating_assignment (guest_id, seat_id)

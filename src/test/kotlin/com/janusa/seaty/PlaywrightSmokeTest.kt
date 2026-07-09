@@ -124,8 +124,8 @@ class PlaywrightSmokeTest {
             assertThat(viewBox).isNotNull()
             assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
 
-            // A round table is labelled with its number in the middle of the close-up (guest 26 is at table 4).
-            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("4")
+            // A round table is labelled with its number in the middle of the close-up (guest 26 is at table 3).
+            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("3")
         }
     }
 
@@ -133,8 +133,8 @@ class PlaywrightSmokeTest {
     fun `the head table close-up is labelled Head Table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            // Guest 133 (Ximena) sits at the rectangular head table (table 17).
-            page.navigate("$baseUrl/?name=Ximena&guest=133")
+            // Guest 141 (Zara) sits at the rectangular head table (table 18).
+            page.navigate("$baseUrl/?name=Zara&guest=141")
             page.waitForSelector(".seating-map-detail .table-label")
 
             val label = page.querySelector(".seating-map-detail .table-label")

@@ -28,7 +28,7 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
     fun `results are ordered by name`() {
         // Empty prefix becomes the LIKE pattern "%", matching every guest.
         val names = guestRepository.findGuests("").map { it.name }
-        assertThat(names).hasSize(144)
+        assertThat(names).hasSize(146)
         assertThat(names).isSorted()
     }
 
