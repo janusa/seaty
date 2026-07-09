@@ -16,7 +16,7 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
 
     @Test
     fun `prefix match returns the matching guest`() {
-        assertThat(guestRepository.findGuests("Alic")).containsExactly(Guest(6, "Alice", 6, 1))
+        assertThat(guestRepository.findGuests("Alic")).containsExactly(Guest(7, "Alice", 7, 1))
     }
 
     @Test
@@ -34,6 +34,6 @@ class GuestRepositoryDataTest : AbstractIntegrationTest() {
 
     @Test
     fun `maps id, name, seat and table`() {
-        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(13, "Bobby", 5, 2))
+        assertThat(guestRepository.findGuests("Bobby")).containsExactly(Guest(14, "Bobby", 6, 2))
     }
 }

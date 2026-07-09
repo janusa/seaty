@@ -55,7 +55,7 @@ class PlaywrightSmokeTest {
     fun `a deep link to a selected guest restores the seating map on load`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=26")
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
             page.waitForSelector(".seating-map .seat-highlight")
             assertThat(page.querySelector(".seating-map-name")?.textContent()).isEqualTo("Charlotte")
         }
@@ -88,7 +88,7 @@ class PlaywrightSmokeTest {
         val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
         newAuthenticatedContext(portrait).use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=26")
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
             page.waitForSelector(".seating-map svg")
 
             // The map is never rotated any more, so its computed transform is either "none" or an
@@ -115,7 +115,7 @@ class PlaywrightSmokeTest {
     fun `selecting a guest also renders a cropped close-up of their table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Charlotte&guest=26")
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
             page.waitForSelector(".seating-map-detail svg .seat-highlight")
 
             // The close-up is cropped to the guest's table once the browser has laid it out, so it
@@ -124,8 +124,8 @@ class PlaywrightSmokeTest {
             assertThat(viewBox).isNotNull()
             assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
 
-            // A round table is labelled with its number in the middle of the close-up (guest 26 is at table 3).
-            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("3")
+            // A round table is labelled with its number in the middle of the close-up (guest 28 is at table 4).
+            assertThat(page.querySelector(".seating-map-detail .table-label")?.textContent()).isEqualTo("4")
         }
     }
 
@@ -133,8 +133,8 @@ class PlaywrightSmokeTest {
     fun `the head table close-up is labelled Head Table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            // Guest 141 (Zara) sits at the rectangular head table (table 18).
-            page.navigate("$baseUrl/?name=Zara&guest=141")
+            // Guest 143 (Zara) sits at the rectangular head table (table 18).
+            page.navigate("$baseUrl/?name=Zara&guest=143")
             page.waitForSelector(".seating-map-detail .table-label")
 
             val label = page.querySelector(".seating-map-detail .table-label")
