@@ -83,6 +83,16 @@ class ScriptRoutingLogicTest {
     }
 
     @Test
+    fun `tableLabel names a regular table by its number`() {
+        assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("Table 7")
+    }
+
+    @Test
+    fun `tableLabel names the head table by name`() {
+        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("Head Table")
+    }
+
+    @Test
     fun `isAlreadyRendered reports a key unseen the first time and seen the second`() {
         val isAlreadyRendered = fn("isAlreadyRendered")
         assertThat(isAlreadyRendered.execute("list:1,2").asBoolean()).isFalse()

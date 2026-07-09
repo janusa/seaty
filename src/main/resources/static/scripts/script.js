@@ -56,6 +56,16 @@ function seatElementId(tableNumber, seatNumber) {
     return `table-${tableNumber}-seat-${seatNumber}`;
 }
 
+// The head table carries a real number in the database (so it fits the same seat/table schema as
+// every other table), but it is only ever shown by name. This is that internal number.
+const HEAD_TABLE_NUMBER = 18;
+
+// How a table is named to guests: "Head Table" for the head table, otherwise "Table N". Kept
+// DOM-free so the same wording drives the list, the map caption, and the close-up label.
+function tableLabel(tableNumber) {
+    return Number(tableNumber) === HEAD_TABLE_NUMBER ? "Head Table" : `Table ${tableNumber}`;
+}
+
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 // Reflect the URL on screen: the list for a `?name=` search, or the map for a `?name=&guest=`
@@ -154,7 +164,7 @@ function renderList(guests) {
         name.textContent = guest.name;
 
         const seat = document.createElement("p");
-        seat.textContent = `Table ${guest.tableNumber}, Seat ${guest.seatNumber}`;
+        seat.textContent = `${tableLabel(guest.tableNumber)}, Seat ${guest.seatNumber}`;
 
         item.append(name, seat);
 
@@ -266,7 +276,7 @@ async function renderSeatingMap(guest) {
 
     const seat = document.createElement("p");
     seat.className = "seating-map-seat";
-    seat.textContent = `Table ${guest.tableNumber}, Seat ${guest.seatNumber}`;
+    seat.textContent = `${tableLabel(guest.tableNumber)}, Seat ${guest.seatNumber}`;
 
     caption.append(name, seat);
 

@@ -21,8 +21,8 @@ class GuestSearchIntegrationTest : AbstractWebIntegrationTest() {
             .json(
                 """
                 [
-                  {"id":5,"name":"Ali","seatNumber":5,"tableNumber":1},
-                  {"id":6,"name":"Alice","seatNumber":6,"tableNumber":1}
+                  {"id":6,"name":"Ali","seatNumber":6,"tableNumber":1},
+                  {"id":7,"name":"Alice","seatNumber":7,"tableNumber":1}
                 ]
                 """.trimIndent(),
                 JsonCompareMode.LENIENT,

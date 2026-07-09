@@ -199,6 +199,13 @@ textarea {
     background-image: none;
 }
 
+/* The viewport-wide map can nudge a horizontal scrollbar into view (100vw counts the vertical
+   scrollbar's gutter); clip that stray overflow. `clip` (not `hidden`) avoids making the page a
+   scroll container, so the sticky header keeps working. */
+.page:has(.search-result-container.map-view) {
+    overflow-x: clip;
+}
+
 .seating-map-caption {
     text-align: center;
     animation: fade-in-up 500ms ease-out both;
@@ -217,8 +224,11 @@ textarea {
     font-weight: 300;
 }
 
+/* The full room map spans almost the whole viewport, breaking out of the padded, max-width container while
+   the caption and close-up beneath it stay within it. The map is centered by its flex parent, which
+   is itself centered in the viewport, so a viewport-wide box lands flush with both screen edges. */
 .seating-map {
-    width: 100%;
+    width: 99vw;
     max-width: 900px;
     animation: grow-in 450ms ease-out both;
 }
