@@ -64,12 +64,14 @@ main {
 }
 
 /* Keep the heading and search box in place while results scroll beneath them. */
-.app-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: var(--background-color);
-    padding-bottom: 1rem;
+@media (orientation: portrait) {
+    .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--background-color);
+        padding-bottom: 1rem;
+    }
 }
 
 h1 {
