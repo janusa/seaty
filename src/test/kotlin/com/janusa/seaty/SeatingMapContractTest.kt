@@ -1,13 +1,11 @@
 package com.janusa.seaty
 
-import com.janusa.seaty.support.AbstractIntegrationTest
+import com.janusa.seaty.support.AbstractDatabaseTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
-import org.springframework.jdbc.core.simple.JdbcClient
 
 /**
  * Guards the silent coupling between the seating-map SVG and the seat data. The frontend lights up a
@@ -20,10 +18,7 @@ import org.springframework.jdbc.core.simple.JdbcClient
  * loads into its own database. A production database built from different data is not covered here and
  * needs the same seat-to-chair check applied wherever that data is loaded.
  */
-class SeatingMapContractTest : AbstractIntegrationTest() {
-    @Autowired
-    private lateinit var jdbcClient: JdbcClient
-
+class SeatingMapContractTest : AbstractDatabaseTest() {
     @Test
     fun `every assigned seat has a matching chair on the seating map`() {
         val chairIds = chairIdsFromMap()

@@ -1,10 +1,8 @@
 package com.janusa.seaty
 
-import com.janusa.seaty.support.AbstractIntegrationTest
+import com.janusa.seaty.support.AbstractDatabaseTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.simple.JdbcClient
 
 /**
  * Guards the committed `db/seed.sql` against `db/schema.sql`. Because the application has no write
@@ -12,10 +10,7 @@ import org.springframework.jdbc.core.simple.JdbcClient
  * future manual inserts) consistent, so this test fails the build if the data ever drifts from the
  * schema. Both pragmas are read-only, so they run fine through the read-only datasource.
  */
-class DatabaseConsistencyTest : AbstractIntegrationTest() {
-    @Autowired
-    private lateinit var jdbcClient: JdbcClient
-
+class DatabaseConsistencyTest : AbstractDatabaseTest() {
     @Test
     fun `the seeded database has no foreign key violations`() {
         val violations = jdbcClient.sql("PRAGMA foreign_key_check").query().listOfRows()

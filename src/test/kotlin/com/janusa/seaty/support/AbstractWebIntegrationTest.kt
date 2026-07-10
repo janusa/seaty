@@ -17,7 +17,7 @@ abstract class AbstractWebIntegrationTest : AbstractIntegrationTest() {
     protected val restClient: RestTestClient by lazy {
         RestTestClient
             .bindToApplicationContext(webContext)
-            .defaultCookie<RestTestClient.WebAppContextSetupBuilder>("session", TEST_SECRET)
+            .defaultCookie<RestTestClient.WebAppContextSetupBuilder>("session", TestDatabase.TEST_SECRET)
             .build()
     }
 }
