@@ -1,18 +1,16 @@
 package com.janusa.seaty
 
-import com.janusa.seaty.support.AbstractIntegrationTest
+import com.janusa.seaty.support.AbstractDatabaseTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
 /**
- * Data-layer test of [GuestRepository] against a real (seeded, temp-file) SQLite database via the
- * application's [org.springframework.jdbc.core.simple.JdbcClient]. Exercises the actual SQL:
- * prefix matching, ordering and row mapping.
+ * Data-layer test of [GuestRepository] against a real (seeded, temp-file) SQLite database via a
+ * [org.springframework.jdbc.core.simple.JdbcClient] wired directly onto the seeded database.
+ * Exercises the actual SQL: prefix matching, ordering and row mapping.
  */
-class GuestRepositoryDataTest : AbstractIntegrationTest() {
-    @Autowired
-    private lateinit var guestRepository: GuestRepository
+class GuestRepositoryDataTest : AbstractDatabaseTest() {
+    private val guestRepository = GuestRepository(jdbcClient)
 
     @Test
     fun `prefix match returns the matching guest`() {
