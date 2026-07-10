@@ -12,6 +12,10 @@ import org.sqlite.JDBC
  * JdbcClient type the application's repositories use, but constructed by hand instead of by
  * Boot autoconfiguration. There is no context refresh, and the shared seeded database
  * ([TestDatabase.path]) is built once and reused (these tests only read).
+ *
+ * For tests that need the running application - HTTP endpoints, the app's own datasource
+ * configuration, or any Spring bean - use [AbstractIntegrationTest] or
+ * [AbstractWebIntegrationTest] instead; those boot the context.
  */
 abstract class AbstractDatabaseTest {
     protected val jdbcClient: JdbcClient =

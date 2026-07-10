@@ -33,7 +33,7 @@ class PlaywrightSmokeTest {
     ): BrowserContext {
         val context = browser.newContext(options)
         context.setDefaultTimeout(DEFAULT_TIMEOUT_MS)
-        context.addCookies(listOf(Cookie("session", TEST_SECRET).setUrl(baseUrl)))
+        context.addCookies(listOf(Cookie("session", TestDatabase.TEST_SECRET).setUrl(baseUrl)))
         return context
     }
 
@@ -163,8 +163,6 @@ class PlaywrightSmokeTest {
     }
 
     private companion object {
-        const val TEST_SECRET = "123"
-
         // Keep the browser waits short so a broken selector fails fast instead of hanging on
         // Playwright's 30s default and dragging out the feedback loop.
         const val DEFAULT_TIMEOUT_MS = 2_000.0
@@ -188,9 +186,8 @@ class PlaywrightSmokeTest {
 
         @JvmStatic
         @DynamicPropertySource
-        fun properties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url") { TestDatabase.readOnlyUrl }
-            registry.add("auth.secret") { TEST_SECRET }
+        fun springProperties(registry: DynamicPropertyRegistry) {
+            TestDatabase.registerProperties(registry)
         }
     }
 }
