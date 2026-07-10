@@ -73,6 +73,25 @@ class PlaywrightSmokeTest {
     }
 
     @Test
+    fun `typing below the minimum clears the prompt, and emptying the box restores it`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/")
+            // The invitation shows before any input.
+            page.waitForSelector("text=Start typing to find your seat!")
+            // Two characters is below the 3-char minimum: the prompt clears and nothing is fetched.
+            page.fill("#guest-search", "Ch")
+            page.waitForFunction(
+                "() => document.querySelector('#search-result-container').children.length === 0",
+            )
+            assertThat(page.querySelectorAll("li.search-result")).isEmpty()
+            // Emptying the box brings the original invitation back.
+            page.fill("#guest-search", "")
+            page.waitForSelector("text=Start typing to find your seat!")
+        }
+    }
+
+    @Test
     fun `searching a name with no matches shows the empty-state message`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()

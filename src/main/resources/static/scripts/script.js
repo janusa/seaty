@@ -101,8 +101,13 @@ function pushState(name, guestId) {
 async function searchGuests(value) {
     const query = value.trim();
 
-    if (query.length < MIN_SEARCH_LENGTH) {
+    if (query.length === 0) {
         showMessage("Start typing to find your seat!");
+        return;
+    }
+
+    if (query.length < MIN_SEARCH_LENGTH) {
+        clearResults();
         return;
     }
 
@@ -401,6 +406,17 @@ function labelTable(tableClone, tableNumber) {
     }
 
     tableClone.append(label);
+}
+
+// Mid-typing but below the search threshold: empty the results area instead of repeating the
+// invitation, so the screen never tells a guest to "start typing" while they already are.
+function clearResults() {
+    if (isAlreadyRendered("empty")) {
+        return;
+    }
+
+    resultsContainer.classList.remove("map-view");
+    resultsContainer.replaceChildren();
 }
 
 function showMessage(text) {
