@@ -302,6 +302,70 @@ textarea {
     font-size: 8px;
 }
 
+/* Faint seat numbers on the close-up, keyed to the roster rows. Font size is in SVG user units (like
+   .table-label), so it scales with the cropped viewBox; digits fit the tight seat spacing. */
+.seat-number-label {
+    fill: var(--light-green);
+    font-family: Cormorant, serif;
+    font-size: 7px;
+    font-weight: 500;
+
+    /* Lining figures share one baseline-to-cap-height box, so numbers sit evenly (as on .table-label). */
+    font-variant-numeric: lining-nums;
+    pointer-events: none;
+}
+
+/* The read-only roster of tablemates beneath the close-up, aligned to the same width. */
+.roster {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.roster-heading {
+    margin: 0 0 0.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* Reuses .search-results-list for the column layout and fade-in, but the rows are separated by
+   hairline rules rather than spaced apart, so it reads as one list. */
+.roster-list {
+    gap: 0;
+}
+
+.roster-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0.25rem;
+    border-bottom: 1px solid var(--light-green);
+}
+
+.roster-row:last-child {
+    border-bottom: none;
+}
+
+/* The selected guest's own row: the same green accent as their lit seat. */
+.roster-self {
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--green);
+}
+
+.roster-name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.roster-seat {
+    margin: 0;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
 @keyframes grow-in {
     from {
         opacity: 0;

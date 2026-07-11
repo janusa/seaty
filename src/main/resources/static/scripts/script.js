@@ -66,7 +66,33 @@ function tableLabel(tableNumber) {
     return Number(tableNumber) === HEAD_TABLE_NUMBER ? "Head Table" : `Table ${tableNumber}`;
 }
 
+// Order a table's guests for the roster: the selected guest's own row first, then everyone else by
+// seat number. Each row is tagged `isSelf` by id, not name, so two guests sharing a first name never
+// both get highlighted. DOM-free so the ordering stands on its own and can be tested off-browser.
+function prepareRoster(guests, selfId) {
+    return guests
+        .map((guest) => ({ ...guest, isSelf: guest.id === selfId }))
+        .sort((a, b) => {
+            if (a.isSelf !== b.isSelf) {
+                return a.isSelf ? -1 : 1;
+            }
+            return a.seatNumber - b.seatNumber;
+        });
+}
+
+// Where a seat's faint number sits on the close-up: pushed `distance` units outward from the table
+// centre through the seat, so the number clears the chair whatever the table's shape.
+function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
+    const dx = seatX - centerX;
+    const dy = seatY - centerY;
+    const length = Math.hypot(dx, dy) || 1;
+    return { x: seatX + (dx / length) * distance, y: seatY + (dy / length) * distance };
+}
+
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+// How far (in SVG user units) a faint seat number sits outside its chair on the table close-up.
+const SEAT_LABEL_DISTANCE = 10;
 
 // Reflect the URL on screen: the list for a `?name=` search, or the map for a `?name=&guest=`
 // selection. Used on first load and on Back/Forward, where all we have is the query string.
@@ -245,6 +271,55 @@ async function loadSeatingMap() {
     return seatingMapSvg;
 }
 
+// Fetch the guests seated at a table (same-origin, so it rides the existing session cookie). Throws
+// on a failed fetch so the caller can fall back to showing the map without a roster.
+async function fetchTableGuests(tableNumber) {
+    const response = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/guests`);
+    if (!response.ok) {
+        throw new Error(`Failed to load the table roster (HTTP ${response.status}).`);
+    }
+    return response.json();
+}
+
+// Build the read-only roster of everyone at the guest's table: the selected guest's own row first
+// (highlighted), then the rest in seat order. Returns null for a solo table so no empty roster is
+// shown. Real text (not aria-hidden), so it reads alongside the caption for assistive technology.
+function renderRoster(guests, guest) {
+    const rows = prepareRoster(guests, guest.id);
+    if (rows.length <= 1) {
+        return null;
+    }
+
+    const section = document.createElement("div");
+    section.className = "roster";
+
+    const heading = document.createElement("h3");
+    heading.className = "roster-heading";
+    heading.textContent = "At your table";
+
+    const list = document.createElement("ul");
+    list.className = "search-results-list roster-list";
+
+    for (const row of rows) {
+        const item = document.createElement("li");
+        item.className = row.isSelf ? "roster-row roster-self" : "roster-row";
+
+        const name = document.createElement("p");
+        name.className = "roster-name";
+        name.textContent = row.name;
+
+        const seat = document.createElement("p");
+        seat.className = "roster-seat";
+        seat.textContent = `Seat ${row.seatNumber}`;
+
+        item.append(name, seat);
+        list.append(item);
+    }
+
+    section.append(heading, list);
+    return section;
+}
+
 // Show the whole room, spotlighting the guest's table and chair. Every chair carries an id of the
 // form `table-{tableNumber}-seat-{seatNumber}`, so the guest's own seat is found by composing that id.
 async function renderSeatingMap(guest) {
@@ -252,6 +327,13 @@ async function renderSeatingMap(guest) {
     if (isAlreadyRendered(key)) {
         return;
     }
+
+    // Fetch the roster alongside the map. It's an enhancement, so a failed fetch resolves to null
+    // (map without a roster) rather than rejecting the whole render.
+    const rosterPromise = fetchTableGuests(guest.tableNumber).catch((error) => {
+        console.warn(error);
+        return null;
+    });
 
     let template;
     try {
@@ -265,6 +347,14 @@ async function renderSeatingMap(guest) {
 
     // A newer view (Back/Forward or a fresh search) was requested while we awaited the map; don't
     // clobber it with this now-stale render.
+    if (renderedKey !== key) {
+        return;
+    }
+
+    // Wait for the roster here, so everything below is built and attached in one synchronous pass.
+    // renderTableDetail measures its bounds on the next animation frame, which needs the close-up
+    // already in the document - so nothing may await between building it and replaceChildren.
+    const rosterGuests = await rosterPromise;
     if (renderedKey !== key) {
         return;
     }
@@ -311,8 +401,9 @@ async function renderSeatingMap(guest) {
     }
 
     const detail = table ? renderTableDetail(table, guest) : null;
+    const roster = rosterGuests ? renderRoster(rosterGuests, guest) : null;
 
-    resultsContainer.replaceChildren(...[caption, map, detail].filter(Boolean));
+    resultsContainer.replaceChildren(...[caption, map, detail, roster].filter(Boolean));
 
     // Scroll the highlighted seat into view: the full room can be wider than a small screen, so the
     // seat may start off-screen. Wait a frame so the map has been laid out first.
@@ -343,6 +434,10 @@ function renderTableDetail(table, guest) {
 
     labelTable(tableClone, guest.tableNumber);
 
+    // Faint seat numbers key each chair to a roster row. Drawn while the clone still carries its
+    // chair ids (`table-{t}-seat-{s}`), since the id-strip below reads the number from each id.
+    labelSeatNumbers(tableClone);
+
     tableClone.removeAttribute("id");
     for (const node of tableClone.querySelectorAll("[id]")) {
         node.removeAttribute("id");
@@ -357,7 +452,8 @@ function renderTableDetail(table, guest) {
     // getBBox needs the element laid out, so crop to the table's bounds on the next frame.
     requestAnimationFrame(() => {
         const bounds = tableClone.getBBox();
-        const padding = 10;
+        // A touch more room than the table alone, so the outward seat numbers aren't clipped.
+        const padding = 14;
         detailSvg.setAttribute(
             "viewBox",
             `${bounds.x - padding} ${bounds.y - padding} ${bounds.width + padding * 2} ${
@@ -406,6 +502,48 @@ function labelTable(tableClone, tableNumber) {
     }
 
     tableClone.append(label);
+}
+
+// Draw a faint number beside every chair on the close-up, matching the seat numbers in the roster.
+// Must run before the clone's ids are stripped: the chairs are found by their `table-{t}-seat-{s}`
+// id, the number is read from that id, and it's placed just outside the chair via seatNumberPosition.
+// The centre is taken from the id-less table body, the same node labelTable measures.
+function labelSeatNumbers(tableClone) {
+    const body = tableClone.querySelector(":scope > circle:not([id]), :scope > rect:not([id])");
+    if (!body) {
+        return;
+    }
+
+    let centerX;
+    let centerY;
+    if (body.hasAttribute("cx")) {
+        centerX = Number(body.getAttribute("cx"));
+        centerY = Number(body.getAttribute("cy"));
+    } else {
+        centerX = Number(body.getAttribute("x")) + Number(body.getAttribute("width")) / 2;
+        centerY = Number(body.getAttribute("y")) + Number(body.getAttribute("height")) / 2;
+    }
+
+    for (const chair of tableClone.querySelectorAll('[id^="table-"]')) {
+        const seatNumber = chair.id.split("-").pop();
+        const position = seatNumberPosition(
+            Number(chair.getAttribute("cx")),
+            Number(chair.getAttribute("cy")),
+            centerX,
+            centerY,
+            SEAT_LABEL_DISTANCE,
+        );
+
+        const label = document.createElementNS(SVG_NAMESPACE, "text");
+        label.setAttribute("x", position.x);
+        label.setAttribute("y", position.y);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("dominant-baseline", "central");
+        label.classList.add("seat-number-label");
+        label.textContent = seatNumber;
+
+        tableClone.append(label);
+    }
 }
 
 // Mid-typing but below the search threshold: empty the results area instead of repeating the
