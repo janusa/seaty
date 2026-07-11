@@ -137,10 +137,20 @@ class PlaywrightSmokeTest {
             page.navigate("$baseUrl/?name=Charlotte&guest=28")
             page.waitForSelector(".seating-map-detail svg .seat-highlight")
 
-            // The close-up is cropped to the guest's table once the browser has laid it out, so it
-            // carries its own viewBox and lights up exactly one seat.
-            val viewBox = page.querySelector(".seating-map-detail svg")?.getAttribute("viewBox")
-            assertThat(viewBox).isNotNull()
+            // The close-up is cropped to the guest's table on the animation frame after it's attached.
+            // Wait for a real (non-degenerate) viewBox: a near-empty box means getBBox ran before the
+            // close-up was in the document - the failure mode when a fetch awaits mid-render.
+            page.waitForFunction(
+                """
+                () => {
+                    const svg = document.querySelector('.seating-map-detail svg');
+                    const viewBox = svg?.getAttribute('viewBox');
+                    if (!viewBox) return false;
+                    const [, , width, height] = viewBox.split(' ').map(Number);
+                    return width > 40 && height > 40;
+                }
+                """.trimIndent(),
+            )
             assertThat(page.querySelectorAll(".seating-map-detail .seat-highlight")).hasSize(1)
 
             // A round table is labelled with its number in the middle of the close-up (guest 28 is at table 4).
@@ -159,6 +169,65 @@ class PlaywrightSmokeTest {
             val label = page.querySelector(".seating-map-detail .table-label")
             assertThat(label?.textContent()).isEqualTo("Head Table")
             assertThat(label?.getAttribute("class")).contains("head-table-label")
+        }
+    }
+
+    @Test
+    fun `the roster lists the guests at the selected guest's table`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
+            page.waitForSelector(".roster-list .roster-row")
+            // Table 4 seats eight guests; the roster lists all of them (this deep link also proves the
+            // roster is restored on load, not only after a click).
+            assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(8)
+        }
+    }
+
+    @Test
+    fun `the selected guest is pinned first`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
+            page.waitForSelector(".roster-list .roster-row")
+            val first = page.querySelector(".roster-list .roster-row")
+            assertThat(first?.getAttribute("class")).contains("roster-self")
+            assertThat(first?.textContent()).contains("Charlotte")
+        }
+    }
+
+    @Test
+    fun `faint seat numbers are drawn on the close-up only`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Charlotte&guest=28")
+            page.waitForSelector(".seating-map-detail .seat-number-label")
+            // One faint number per chair on the table-4 close-up...
+            assertThat(page.querySelectorAll(".seating-map-detail .seat-number-label")).hasSize(8)
+            // ...and none on the full room map, which stays uncluttered.
+            assertThat(page.querySelectorAll(".seating-map .seat-number-label")).isEmpty()
+        }
+    }
+
+    @Test
+    fun `the head table roster lists its six guests`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/?name=Zara&guest=143")
+            page.waitForSelector(".roster-list .roster-row")
+            assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(6)
+        }
+    }
+
+    @Test
+    fun `a ten-seat table roster renders in full on a portrait phone`() {
+        val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
+        newAuthenticatedContext(portrait).use { context ->
+            val page = context.newPage()
+            // Guest 14 (Bobby) sits at table 2, a ten-seat round table.
+            page.navigate("$baseUrl/?name=Bobby&guest=14")
+            page.waitForSelector(".roster-list .roster-row")
+            assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(10)
         }
     }
 

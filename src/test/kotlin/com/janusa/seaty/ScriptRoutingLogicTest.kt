@@ -109,6 +109,49 @@ class ScriptRoutingLogicTest {
         assertThat(isAlreadyRendered.execute("map:1").asBoolean()).isFalse()
     }
 
+    @Test
+    fun `prepareRoster pins the selected guest first then orders the rest by seat`() {
+        val roster =
+            js.eval(
+                "js",
+                "prepareRoster([{id:29,seatNumber:3},{id:28,seatNumber:2},{id:27,seatNumber:1}], 28)",
+            )
+        assertThat(roster.arraySize).isEqualTo(3L)
+        assertThat(roster.getArrayElement(0).getMember("id").asInt()).isEqualTo(28)
+        assertThat(roster.getArrayElement(0).getMember("isSelf").asBoolean()).isTrue()
+        assertThat(roster.getArrayElement(1).getMember("id").asInt()).isEqualTo(27)
+        assertThat(roster.getArrayElement(2).getMember("id").asInt()).isEqualTo(29)
+        assertThat(roster.getArrayElement(1).getMember("isSelf").asBoolean()).isFalse()
+    }
+
+    @Test
+    fun `prepareRoster marks only the guest whose id matches as you`() {
+        // Two guests share the first name "Charlie"; only the one whose id is selected is "you".
+        val roster =
+            js.eval(
+                "js",
+                "prepareRoster([{id:26,name:'Charlie',seatNumber:8},{id:27,name:'Charlie',seatNumber:1}], 27)",
+            )
+        assertThat(roster.getArrayElement(0).getMember("id").asInt()).isEqualTo(27)
+        assertThat(roster.getArrayElement(0).getMember("isSelf").asBoolean()).isTrue()
+        assertThat(roster.getArrayElement(1).getMember("id").asInt()).isEqualTo(26)
+        assertThat(roster.getArrayElement(1).getMember("isSelf").asBoolean()).isFalse()
+    }
+
+    @Test
+    fun `prepareRoster returns a single self row for a solo table`() {
+        val roster = js.eval("js", "prepareRoster([{id:28,seatNumber:2}], 28)")
+        assertThat(roster.arraySize).isEqualTo(1L)
+        assertThat(roster.getArrayElement(0).getMember("isSelf").asBoolean()).isTrue()
+    }
+
+    @Test
+    fun `seatNumberPosition pushes the label radially outward from the table centre`() {
+        val position = fn("seatNumberPosition").execute(30, 100, 30, 122, 11)
+        assertThat(position.getMember("x").asDouble()).isEqualTo(30.0)
+        assertThat(position.getMember("y").asDouble()).isEqualTo(89.0)
+    }
+
     private companion object {
         val SCRIPT_JS: String =
             ClassPathResource("static/scripts/script.js")
