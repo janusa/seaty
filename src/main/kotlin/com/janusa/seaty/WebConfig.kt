@@ -17,10 +17,21 @@ class WebConfig(
             .addPathPatterns("/**")
             // The whole /error tree stays open: the error-dispatch page must render without
             // re-triggering auth, and its flower images must load even on the unauthenticated 401 page.
-            // The favicons stay open too: browsers auto-request /favicon.ico and the icons must show
-            // on the unauthenticated landing and error pages.
-            .excludePathPatterns("/auth", "/error", "/error/**", "/favicon.ico", "/apple-touch-icon.png")
-        log.info("Registered AuthInterceptor for /** (excluding /auth, /error/** and favicons)")
+            // The favicons and touch icons stay open too: browsers and mobile OSes auto-request them,
+            // often directly rather than via a page <link>, so the served ones must show on the
+            // unauthenticated landing and error pages. /apple-touch-icon-precomposed.png is a legacy
+            // iOS/Android probe path we intentionally do not ship a file for: excluding it lets the
+            // request fall through to a clean 404 (the client then falls back to /apple-touch-icon.png)
+            // instead of a misleading 401 that would also fill the auth-warning log with benign probes.
+            .excludePathPatterns(
+                "/auth",
+                "/error",
+                "/error/**",
+                "/favicon.ico",
+                "/apple-touch-icon.png",
+                "/apple-touch-icon-precomposed.png",
+            )
+        log.info("Registered AuthInterceptor for /** (excluding /auth, /error/** and icons)")
     }
 
     private companion object {

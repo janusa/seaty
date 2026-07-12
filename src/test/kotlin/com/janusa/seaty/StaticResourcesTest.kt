@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.client.RestTestClient
 
 /**
  * Tests the statically served frontend.
@@ -22,6 +23,11 @@ class StaticResourcesTest : AbstractWebIntegrationTest() {
     // Spring has served ".js" as either "application/javascript" or "text/javascript" across versions;
     // accept both so the test guards "is it JavaScript" without pinning the exact spelling.
     private val javascript = listOf("text/javascript", "application/javascript").map(MediaType::valueOf)
+
+    /** No session cookie - stands in for a browser or mobile OS auto-probing for an icon. */
+    private val anonymousClient: RestTestClient by lazy {
+        RestTestClient.bindToApplicationContext(webContext).build()
+    }
 
     @Test
     fun `welcome page route is mapped`() {
@@ -107,6 +113,39 @@ class StaticResourcesTest : AbstractWebIntegrationTest() {
             .exchange()
             .expectStatus()
             .isOk()
+    }
+
+    @Test
+    fun `precomposed touch-icon probe falls through to a clean 404, not a gated 401`() {
+        // The auth interceptor excludes this legacy iOS/Android probe path, so an unauthenticated
+        // request reaches the resource layer and 404s (no file is shipped) instead of being gated
+        // to a misleading 401.
+        anonymousClient
+            .get()
+            .uri("/apple-touch-icon-precomposed.png")
+            .exchange()
+            .expectStatus()
+            .isNotFound()
+
+        // The icon that clients fall back to is itself auth-open and actually served, so the
+        // fallback the 404 relies on works for the same unauthenticated client.
+        anonymousClient
+            .get()
+            .uri("/apple-touch-icon.png")
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentTypeCompatibleWith(MediaType.IMAGE_PNG)
+
+        // Control: a non-excluded missing path is still gated to 401 for the same anonymous client,
+        // proving the 404 above comes from the exclusion, not from anonymity 404ing everything.
+        anonymousClient
+            .get()
+            .uri("/not-an-excluded-path.png")
+            .exchange()
+            .expectStatus()
+            .isUnauthorized()
     }
 
     @Test
