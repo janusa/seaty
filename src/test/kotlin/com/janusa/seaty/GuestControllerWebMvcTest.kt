@@ -57,10 +57,22 @@ class GuestControllerWebMvcTest {
     }
 
     @Test
-    fun `name shorter than 3 characters is rejected with a problem detail`() {
+    fun `a single-character name is accepted`() {
+        every { guestRepository.findGuests("C") } returns listOf(Guest(1, "Chad", 3, 5))
+
         client
             .get()
-            .uri("/api/guests?name=ab")
+            .uri("/api/guests?name=C")
+            .exchange()
+            .expectStatus()
+            .isOk()
+    }
+
+    @Test
+    fun `an empty name is rejected with a problem detail`() {
+        client
+            .get()
+            .uri("/api/guests?name=")
             .exchange()
             .expectStatus()
             .isBadRequest()

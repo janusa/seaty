@@ -30,6 +30,19 @@ class GuestSearchIntegrationTest : AbstractWebIntegrationTest() {
     }
 
     @Test
+    fun `a two-character prefix is accepted and returns matches`() {
+        restClient
+            .get()
+            .uri("/api/guests?name=Ad")
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .jsonPath("$[0].name")
+            .exists()
+    }
+
+    @Test
     fun `searching with no matches returns an empty array`() {
         restClient
             .get()
