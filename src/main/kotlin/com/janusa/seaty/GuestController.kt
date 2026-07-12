@@ -16,8 +16,8 @@ class GuestController(
     @GetMapping()
     fun getGuests(
         @RequestParam @Size(
-            min = 3,
-            message = "Name must be at least 3 characters",
+            min = 1,
+            message = "Name must not be empty",
         ) name: String,
     ): List<Guest> {
         log.debug("Guest search requested with prefix='{}'", name)

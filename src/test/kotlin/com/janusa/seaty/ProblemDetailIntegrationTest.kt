@@ -15,7 +15,7 @@ class ProblemDetailIntegrationTest : AbstractWebIntegrationTest() {
     fun `validation failure is a problem detail with the custom message`() {
         restClient
             .get()
-            .uri("/api/guests?name=ab")
+            .uri("/api/guests?name=")
             .exchange()
             .expectStatus()
             .isBadRequest()

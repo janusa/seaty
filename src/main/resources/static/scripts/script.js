@@ -9,8 +9,6 @@ let latestSearchId = 0;
 // The seating-map SVG, fetched and parsed once, then cloned for every selection.
 let seatingMapSvg = null;
 
-const MIN_SEARCH_LENGTH = 3;
-
 // DOM handles, assigned by the browser bootstrap at the bottom of the file. They stay undefined when
 // this file is loaded outside a browser (the definitions below are pure and don't touch them).
 let searchForm;
@@ -132,11 +130,6 @@ async function searchGuests(value) {
         return;
     }
 
-    if (query.length < MIN_SEARCH_LENGTH) {
-        clearResults();
-        return;
-    }
-
     const requestId = ++latestSearchId;
 
     try {
@@ -230,7 +223,7 @@ async function showSeatingMapById(name, guestId) {
         });
 
         if (!response.ok) {
-            // e.g. a hand-edited deep link whose name is below the search minimum -> 400.
+            // e.g. a hand-edited deep link with an empty name -> 400.
             showMessage("No guests found with this name.");
             return;
         }
@@ -544,17 +537,6 @@ function labelSeatNumbers(tableClone) {
 
         tableClone.append(label);
     }
-}
-
-// Mid-typing but below the search threshold: empty the results area instead of repeating the
-// invitation, so the screen never tells a guest to "start typing" while they already are.
-function clearResults() {
-    if (isAlreadyRendered("empty")) {
-        return;
-    }
-
-    resultsContainer.classList.remove("map-view");
-    resultsContainer.replaceChildren();
 }
 
 function showMessage(text) {
