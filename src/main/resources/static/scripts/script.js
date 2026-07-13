@@ -80,6 +80,12 @@ function prepareRoster(guests, selfId) {
         });
 }
 
+// Everyone seated at a given table, picked out of the full guest list. Pure and DOM-free so the
+// neighbor roster can be derived from the list already in memory, with no extra request.
+function guestsAtTable(guests, tableNumber) {
+    return guests.filter((candidate) => candidate.tableNumber === tableNumber);
+}
+
 // Where a seat's faint number sits on the close-up: pushed `distance` units outward from the table
 // centre through the seat, so the number clears the chair whatever the table's shape.
 function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
@@ -329,16 +335,6 @@ async function loadSeatingMap() {
     return seatingMapSvg;
 }
 
-// Fetch the guests seated at a table (same-origin, so it rides the existing session cookie). Throws
-// on a failed fetch so the caller can fall back to showing the map without a roster.
-async function fetchTableGuests(tableNumber) {
-    const response = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/guests`);
-    if (!response.ok) {
-        throw new Error(`Failed to load the table roster (HTTP ${response.status}).`);
-    }
-    return response.json();
-}
-
 // Build the read-only roster of everyone at the guest's table: the selected guest's own row first
 // (highlighted), then the rest in seat order. Returns null for a solo table so no empty roster is
 // shown. Real text (not aria-hidden), so it reads alongside the caption for assistive technology.
@@ -386,12 +382,12 @@ async function renderSeatingMap(guest) {
         return;
     }
 
-    // Fetch the roster alongside the map. It's an enhancement, so a failed fetch resolves to null
-    // (map without a roster) rather than rejecting the whole render.
-    const rosterPromise = fetchTableGuests(guest.tableNumber).catch((error) => {
-        console.warn(error);
-        return null;
-    });
+    // The roster comes from the full guest list already in memory, filtered to this table, so it
+    // needs no extra request. loadAllGuests never rejects (it resolves to an empty list on failure),
+    // in which case renderRoster simply shows the map without a roster.
+    const rosterPromise = loadAllGuests().then((guests) =>
+        guestsAtTable(guests, guest.tableNumber),
+    );
 
     let template;
     try {

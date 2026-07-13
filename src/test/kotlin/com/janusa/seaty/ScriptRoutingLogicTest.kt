@@ -151,6 +151,18 @@ class ScriptRoutingLogicTest {
     }
 
     @Test
+    fun `guestsAtTable keeps only the guests seated at the given table`() {
+        val roster =
+            js.eval(
+                "js",
+                "guestsAtTable([{id:1,tableNumber:4},{id:2,tableNumber:2},{id:3,tableNumber:4}], 4)",
+            )
+        assertThat(roster.arraySize).isEqualTo(2L)
+        assertThat(roster.getArrayElement(0).getMember("id").asInt()).isEqualTo(1)
+        assertThat(roster.getArrayElement(1).getMember("id").asInt()).isEqualTo(3)
+    }
+
+    @Test
     fun `seatNumberPosition pushes the label radially outward from the table centre`() {
         val position = fn("seatNumberPosition").execute(30, 100, 30, 122, 11)
         assertThat(position.getMember("x").asDouble()).isEqualTo(30.0)
