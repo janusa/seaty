@@ -74,4 +74,18 @@ class GuestControllerWebMvcTest {
             .expectBody()
             .json("[]", JsonCompareMode.LENIENT)
     }
+
+    @Test
+    fun `the guest list is cacheable privately by the browser`() {
+        every { guestRepository.findAllGuests() } returns emptyList()
+
+        client
+            .get()
+            .uri("/api/guests")
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .valueEquals("Cache-Control", "max-age=3600, private")
+    }
 }
