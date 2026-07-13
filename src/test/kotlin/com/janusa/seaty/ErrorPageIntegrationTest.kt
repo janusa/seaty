@@ -104,22 +104,22 @@ class ErrorPageIntegrationTest : AbstractWebIntegrationTest() {
     fun `api clients keep problem+json but browsers are routed to the error page`() {
         restClient
             .get()
-            .uri("/api/guests?name=")
+            .uri("/api/does-not-exist")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()
-            .isBadRequest()
+            .isNotFound()
             .expectHeader()
             .contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
 
         val browserResult =
             restClient
                 .get()
-                .uri("/api/guests?name=")
+                .uri("/api/does-not-exist")
                 .accept(MediaType.TEXT_HTML)
                 .exchange()
                 .expectStatus()
-                .isBadRequest()
+                .isNotFound()
                 .expectBody(String::class.java)
                 .returnResult()
 

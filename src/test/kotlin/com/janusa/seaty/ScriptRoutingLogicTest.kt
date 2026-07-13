@@ -39,6 +39,11 @@ class ScriptRoutingLogicTest {
 
     private fun fn(name: String): Value = js.eval("js", name)
 
+    private fun matchScore(
+        name: String,
+        foldedQuery: String,
+    ): Int = js.eval("js", "guestMatchScore({name:'$name'}, '$foldedQuery')").asInt()
+
     @Test
     fun `buildQuery assembles the query for a name and a guest`() {
         assertThat(fn("buildQuery").execute("", "Charlie", 42).asString())
@@ -146,10 +151,92 @@ class ScriptRoutingLogicTest {
     }
 
     @Test
+    fun `guestsAtTable keeps only the guests seated at the given table`() {
+        val roster =
+            js.eval(
+                "js",
+                "guestsAtTable([{id:1,tableNumber:4},{id:2,tableNumber:2},{id:3,tableNumber:4}], 4)",
+            )
+        assertThat(roster.arraySize).isEqualTo(2L)
+        assertThat(roster.getArrayElement(0).getMember("id").asInt()).isEqualTo(1)
+        assertThat(roster.getArrayElement(1).getMember("id").asInt()).isEqualTo(3)
+    }
+
+    @Test
     fun `seatNumberPosition pushes the label radially outward from the table centre`() {
         val position = fn("seatNumberPosition").execute(30, 100, 30, 122, 11)
         assertThat(position.getMember("x").asDouble()).isEqualTo(30.0)
         assertThat(position.getMember("y").asDouble()).isEqualTo(89.0)
+    }
+
+    // Near-match search: the pure matching helpers (foldName, fuzzyPrefixDistance, guestMatchScore,
+    // matchGuests) that back the client-side guest search. Passing plain objects and strings mirrors
+    // how prepareRoster is exercised above.
+
+    @Test
+    fun `the JS engine strips diacritics via NFD normalize and the Unicode property escape`() {
+        // Guards foldName's approach: if a future engine lacks \p{Diacritic}, this canary fails first.
+        val stripped =
+            js.eval("js", """ "Zoë".normalize("NFD").replace(/\p{Diacritic}/gu, "") """).asString()
+        assertThat(stripped).isEqualTo("Zoe")
+    }
+
+    @Test
+    fun `foldName strips accents and lowercases`() {
+        val fold = fn("foldName")
+        assertThat(fold.execute("Zoë").asString()).isEqualTo("zoe")
+        assertThat(fold.execute("María").asString()).isEqualTo("maria")
+        assertThat(fold.execute("Irène").asString()).isEqualTo("irene")
+        assertThat(fold.execute("ALICE").asString()).isEqualTo("alice")
+    }
+
+    @Test
+    fun `fuzzyPrefixDistance treats trailing characters of the name as free`() {
+        val distance = fn("fuzzyPrefixDistance")
+        // A query that is already a prefix costs nothing, however much name follows it.
+        assertThat(distance.execute("cha", "charlie").asInt()).isEqualTo(0)
+        // A single missing or wrong character costs one edit.
+        assertThat(distance.execute("jon", "john").asInt()).isEqualTo(1)
+        assertThat(distance.execute("denis", "dennis").asInt()).isEqualTo(1)
+    }
+
+    @Test
+    fun `guestMatchScore ranks prefix over word-start over fuzzy and honours the length floor`() {
+        assertThat(matchScore("Charlie", "cha")).isEqualTo(0)
+        assertThat(matchScore("Mary Chase", "cha")).isEqualTo(1)
+        assertThat(matchScore("Dennis", "denis")).isEqualTo(11)
+        // Below the four-character floor a non-prefix query never fuzzy-matches, so it can't flood.
+        assertThat(matchScore("Charlie", "cba")).isEqualTo(-1)
+        // Beyond the edit-distance threshold there is no match either.
+        assertThat(matchScore("Charlotte", "zzzz")).isEqualTo(-1)
+        // Folding lets an unaccented query match at the prefix tier.
+        assertThat(matchScore("María", "maria")).isEqualTo(0)
+    }
+
+    @Test
+    fun `matchGuests ranks the tiers then alphabetises within a tier`() {
+        val ranked =
+            js.eval(
+                "js",
+                "matchGuests('cha', [{id:3,name:'Chase'},{id:2,name:'Mary Chase'},{id:1,name:'Charlie'}])",
+            )
+        assertThat(ranked.arraySize).isEqualTo(3L)
+        assertThat(ranked.getArrayElement(0).getMember("name").asString()).isEqualTo("Charlie")
+        assertThat(ranked.getArrayElement(1).getMember("name").asString()).isEqualTo("Chase")
+        assertThat(ranked.getArrayElement(2).getMember("name").asString()).isEqualTo("Mary Chase")
+    }
+
+    @Test
+    fun `matchGuests does not fuzzy-flood on a short non-prefix query`() {
+        val ranked = js.eval("js", "matchGuests('cba', [{id:1,name:'Charlie'},{id:2,name:'Chase'}])")
+        assertThat(ranked.arraySize).isEqualTo(0L)
+    }
+
+    @Test
+    fun `matchGuests finds an accented name from an unaccented query`() {
+        val ranked = js.eval("js", "matchGuests('zoe', [{id:144,name:'Zoë'}])")
+        assertThat(ranked.arraySize).isEqualTo(1L)
+        assertThat(ranked.getArrayElement(0).getMember("name").asString()).isEqualTo("Zoë")
     }
 
     private companion object {

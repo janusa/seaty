@@ -1,10 +1,12 @@
-let timeoutId = null;
-
 // What's currently on screen, so an identical result doesn't re-render (and re-trigger the animations).
 let renderedKey = null;
 
 // Monotonic id for the in-flight guest search, so a slow earlier response can't overwrite a newer one.
 let latestSearchId = 0;
+
+// The full guest list, fetched once and then matched against in the browser (near-match search lives
+// client-side). A memoised promise so concurrent searches share the single in-flight request.
+let allGuestsPromise = null;
 
 // The seating-map SVG, fetched and parsed once, then cloned for every selection.
 let seatingMapSvg = null;
@@ -78,6 +80,12 @@ function prepareRoster(guests, selfId) {
         });
 }
 
+// Everyone seated at a given table, picked out of the full guest list. Pure and DOM-free so the
+// neighbor roster can be derived from the list already in memory, with no extra request.
+function guestsAtTable(guests, tableNumber) {
+    return guests.filter((candidate) => candidate.tableNumber === tableNumber);
+}
+
 // Where a seat's faint number sits on the close-up: pushed `distance` units outward from the table
 // centre through the seat, so the number clears the chair whatever the table's shape.
 function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
@@ -85,6 +93,78 @@ function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
     const dy = seatY - centerY;
     const length = Math.hypot(dx, dy) || 1;
     return { x: seatX + (dx / length) * distance, y: seatY + (dy / length) * distance };
+}
+
+// Fold a name for comparison: strip accents and lowercase, so "José" and "jose" compare equal. Uses
+// the browser's own full-Unicode normalizer, no dependency. Pure, like the helpers above.
+function foldName(value) {
+    return value
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase();
+}
+
+// Fewest single-character edits (insert/delete/substitute) to turn `query` into any *prefix* of
+// `text`: trailing characters of `text` are free, so "jon" is distance 1 from "john(...)". This is
+// how a misspelled query is scored against a full name.
+function fuzzyPrefixDistance(query, text) {
+    let previous = Array.from({ length: text.length + 1 }, (_, index) => index);
+
+    for (let i = 1; i <= query.length; i++) {
+        const current = [i];
+        for (let j = 1; j <= text.length; j++) {
+            const substitution = query[i - 1] === text[j - 1] ? 0 : 1;
+            current[j] = Math.min(
+                previous[j] + 1,
+                current[j - 1] + 1,
+                previous[j - 1] + substitution,
+            );
+        }
+        previous = current;
+    }
+
+    return Math.min(...previous);
+}
+
+// Rank one guest against an already-folded query. Lower is better; -1 means "no match". An exact
+// prefix beats a word-start match, which beats a fuzzy near-miss. Fuzzy only kicks in once the query
+// is long enough to be meaningful, since a one- or two-character query is within an edit of almost
+// every name and would flood the list.
+function guestMatchScore(guest, foldedQuery) {
+    const name = foldName(guest.name);
+    if (name.startsWith(foldedQuery)) {
+        return 0;
+    }
+
+    const words = name.split(/\s+/);
+    if (words.some((word) => word.startsWith(foldedQuery))) {
+        return 1;
+    }
+
+    if (foldedQuery.length < 4) {
+        return -1;
+    }
+
+    const distance = Math.min(
+        ...[name, ...words].map((text) => fuzzyPrefixDistance(foldedQuery, text)),
+    );
+    const threshold = foldedQuery.length <= 5 ? 1 : 2;
+    return distance <= threshold ? 10 + distance : -1;
+}
+
+// Filter and rank the full guest list against a raw query, best matches first. The list arrives
+// already name-sorted from the server, so the alphabetical tiebreak just keeps equal-score rows tidy.
+function matchGuests(query, guests) {
+    const foldedQuery = foldName(query.trim());
+    if (foldedQuery.length === 0) {
+        return [];
+    }
+
+    return guests
+        .map((guest) => ({ guest, score: guestMatchScore(guest, foldedQuery) }))
+        .filter((entry) => entry.score >= 0)
+        .sort((a, b) => a.score - b.score || a.guest.name.localeCompare(b.guest.name))
+        .map((entry) => entry.guest);
 }
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
@@ -113,13 +193,36 @@ function commitSearch(value) {
 
 // Push the current view onto the browser history: a `?name=` search, or a `?name=&guest=` map
 // selection. Skips duplicates so an unchanged state doesn't create a dead entry; keeping it in the
-// URL also lets a search — or a selected seat — survive a reload and be shared.
+// URL also lets a search, or a selected seat, survive a reload and be shared.
 function pushState(name, guestId) {
     const query = buildQuery(window.location.search, name, guestId);
     if (query === null) {
         return;
     }
     window.history.pushState(null, "", query || window.location.pathname);
+}
+
+// Fetch the whole guest list once (same-origin, so it rides the existing session cookie) and cache
+// the promise, so every search matches against an in-memory list instead of a round trip. On failure
+// the cache is cleared so the next search retries, and callers get an empty list (rendered as "no
+// matches") rather than a rejection.
+function loadAllGuests() {
+    if (allGuestsPromise === null) {
+        allGuestsPromise = fetch("/api/guests")
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load guests (HTTP ${response.status}).`);
+                }
+                return response.json();
+            })
+            .catch((error) => {
+                console.error(error);
+                allGuestsPromise = null;
+                return [];
+            });
+    }
+
+    return allGuestsPromise;
 }
 
 async function searchGuests(value) {
@@ -131,32 +234,14 @@ async function searchGuests(value) {
     }
 
     const requestId = ++latestSearchId;
+    const guests = await loadAllGuests();
 
-    try {
-        const response = await fetch(`/api/guests?name=${encodeURIComponent(query)}`, {
-            method: "GET",
-        });
-
-        // A newer search started while this one was in flight; drop this now-stale response.
-        if (requestId !== latestSearchId) {
-            return;
-        }
-
-        if (!response.ok) {
-            showMessage("No guests found with this name.");
-            return;
-        }
-
-        const guests = await response.json();
-
-        if (requestId !== latestSearchId) {
-            return;
-        }
-
-        renderGuests(guests);
-    } catch (error) {
-        console.error(error);
+    // A newer search started while the list was loading; drop this now-stale render.
+    if (requestId !== latestSearchId) {
+        return;
     }
+
+    renderGuests(matchGuests(query, guests));
 }
 
 function renderGuests(guests) {
@@ -217,28 +302,14 @@ function selectGuest(guest) {
 // Restore the seating map from the URL (reload or Back/Forward): all we have is the guest's name and
 // id, so re-run the name search and pick the matching guest out of the results to render their map.
 async function showSeatingMapById(name, guestId) {
-    try {
-        const response = await fetch(`/api/guests?name=${encodeURIComponent(name)}`, {
-            method: "GET",
-        });
+    const guests = await loadAllGuests();
+    const guest = guests.find((candidate) => candidate.id === guestId);
 
-        if (!response.ok) {
-            // e.g. a hand-edited deep link with an empty name -> 400.
-            showMessage("No guests found with this name.");
-            return;
-        }
-
-        const guests = await response.json();
-        const guest = guests.find((candidate) => candidate.id === guestId);
-
-        if (guest) {
-            renderSeatingMap(guest);
-        } else {
-            // The guest is gone (e.g. a stale or shared link) - fall back to the plain search results.
-            renderGuests(guests);
-        }
-    } catch (error) {
-        console.error(error);
+    if (guest) {
+        renderSeatingMap(guest);
+    } else {
+        // The guest is gone (e.g. a stale or shared link) - fall back to the plain search results.
+        renderGuests(matchGuests(name, guests));
     }
 }
 
@@ -262,16 +333,6 @@ async function loadSeatingMap() {
     }
 
     return seatingMapSvg;
-}
-
-// Fetch the guests seated at a table (same-origin, so it rides the existing session cookie). Throws
-// on a failed fetch so the caller can fall back to showing the map without a roster.
-async function fetchTableGuests(tableNumber) {
-    const response = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/guests`);
-    if (!response.ok) {
-        throw new Error(`Failed to load the table roster (HTTP ${response.status}).`);
-    }
-    return response.json();
 }
 
 // Build the read-only roster of everyone at the guest's table: the selected guest's own row first
@@ -321,12 +382,12 @@ async function renderSeatingMap(guest) {
         return;
     }
 
-    // Fetch the roster alongside the map. It's an enhancement, so a failed fetch resolves to null
-    // (map without a roster) rather than rejecting the whole render.
-    const rosterPromise = fetchTableGuests(guest.tableNumber).catch((error) => {
-        console.warn(error);
-        return null;
-    });
+    // The roster comes from the full guest list already in memory, filtered to this table, so it
+    // needs no extra request. loadAllGuests never rejects (it resolves to an empty list on failure),
+    // in which case renderRoster simply shows the map without a roster.
+    const rosterPromise = loadAllGuests().then((guests) =>
+        guestsAtTable(guests, guest.tableNumber),
+    );
 
     let template;
     try {
@@ -570,18 +631,18 @@ if (typeof document !== "undefined") {
     searchInput = document.querySelector("#guest-search");
     resultsContainer = document.querySelector("#search-result-container");
 
-    searchInput.addEventListener("input", () => {
-        clearTimeout(timeoutId);
+    // Warm the in-memory guest list right away so the first keystroke matches with no network wait.
+    loadAllGuests();
 
-        timeoutId = setTimeout(() => {
-            commitSearch(searchInput.value);
-        }, 200);
+    // Search on every keystroke. Matching is in-memory now (no round trip), so there's nothing to
+    // debounce; each keystroke is its own history entry, so Back/Forward step through the search.
+    searchInput.addEventListener("input", () => {
+        commitSearch(searchInput.value);
     });
 
     // Pressing Enter would otherwise submit the form and reload the page; search in place instead.
     searchForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        clearTimeout(timeoutId);
         commitSearch(searchInput.value);
     });
 

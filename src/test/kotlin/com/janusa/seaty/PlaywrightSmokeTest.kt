@@ -101,6 +101,32 @@ class PlaywrightSmokeTest {
     }
 
     @Test
+    fun `a misspelled name still finds the intended guest`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/")
+            // "Denis" is a one-edit misspelling of the seeded "Dennis"; near-match still finds him.
+            page.fill("#guest-search", "Denis")
+            page.waitForSelector("li.search-result")
+            val names = page.querySelectorAll("li.search-result h2").map { it.textContent() }
+            assertThat(names).contains("Dennis")
+        }
+    }
+
+    @Test
+    fun `an unaccented query matches an accented guest name`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/")
+            // The seeded guest is "Zoë"; typing plain "Zoe" should still find her.
+            page.fill("#guest-search", "Zoe")
+            page.waitForSelector("li.search-result")
+            val names = page.querySelectorAll("li.search-result h2").map { it.textContent() }
+            assertThat(names).contains("Zoë")
+        }
+    }
+
+    @Test
     fun `on a portrait phone viewport the seating map stays landscape`() {
         val portrait = Browser.NewContextOptions().setViewportSize(390, 844)
         newAuthenticatedContext(portrait).use { context ->
