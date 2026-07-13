@@ -7,14 +7,18 @@
     <link href="/favicon.ico" rel="icon" sizes="any">
     <link href="/apple-touch-icon.png" rel="apple-touch-icon">
     <link href="css/styles.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@100;200;300;400;500&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@100;200;300;400;500&family=Noto+Serif+Tamil:wght@300;400;500&display=swap"
           rel="stylesheet">
 </head>
 <body class="page">
 <header class="container app-header">
-    <a aria-label="Go back" href="/">
-    </a>
-    <h1>Guest Search</h1>
+    <div class="lang-switcher" id="lang-switcher" role="group" aria-label="Language"
+         data-i18n-attr="aria-label:lang.label">
+        <button class="lang-option" type="button" data-lang="en">English</button>
+        <button class="lang-option" type="button" data-lang="no">Norsk</button>
+        <button class="lang-option" type="button" data-lang="ta">தமிழ்</button>
+    </div>
+    <h1 data-i18n="search.heading">Guest Search</h1>
     <form role="search">
         <div class="search-container">
             <svg aria-hidden="true"
@@ -35,6 +39,7 @@
                 aria-label="Search for your name"
                 autocomplete="off"
                 class="search-input"
+                data-i18n-attr="aria-label:search.inputLabel;placeholder:search.placeholder"
                 id="guest-search"
                 name="name"
                 placeholder="Search for your name..."
@@ -44,7 +49,7 @@
 </header>
 <main class="container">
     <section aria-live="polite" class="search-result-container" id="search-result-container">
-        <p>
+        <p data-i18n="search.prompt">
             Start typing to find your seat!
         </p>
     </section>

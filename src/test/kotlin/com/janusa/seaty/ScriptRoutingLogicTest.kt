@@ -98,6 +98,38 @@ class ScriptRoutingLogicTest {
     }
 
     @Test
+    fun `tableLabel translates once the locale is Norwegian`() {
+        js.eval("js", "setActiveLocale('no')")
+        assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("Bord 7")
+        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("Hovedbord")
+    }
+
+    @Test
+    fun `tableLabel translates once the locale is Tamil`() {
+        js.eval("js", "setActiveLocale('ta')")
+        assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("மேசை 7")
+        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("தலைமை மேசை")
+    }
+
+    @Test
+    fun `translate fills placeholders and composes the seat line in the active language`() {
+        js.eval("js", "setActiveLocale('no')")
+        val line = js.eval("js", "translate('seatLine', {table: tableLabel(7), n: 3})").asString()
+        assertThat(line).isEqualTo("Bord 7, plass 3")
+    }
+
+    @Test
+    fun `setActiveLocale ignores an unsupported locale and keeps English`() {
+        js.eval("js", "setActiveLocale('xx')")
+        assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("Table 7")
+    }
+
+    @Test
+    fun `translate falls back to the key when the message is unknown`() {
+        assertThat(fn("translate").execute("does.not.exist").asString()).isEqualTo("does.not.exist")
+    }
+
+    @Test
     fun `isAlreadyRendered reports a key unseen the first time and seen the second`() {
         val isAlreadyRendered = fn("isAlreadyRendered")
         assertThat(isAlreadyRendered.execute("list:1,2").asBoolean()).isFalse()

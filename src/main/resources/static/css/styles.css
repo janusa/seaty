@@ -24,7 +24,7 @@ body {
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    font-family: Cormorant, serif;
+    font-family: Cormorant, "Noto Serif Tamil", serif;
     background-color: var(--background-color);
     color: var(--main-font-color);
 }
@@ -83,6 +83,39 @@ input,
 button,
 textarea {
     font: inherit;
+}
+
+/* The language options sit as a horizontal row at the top of the header, aligned to the right edge.
+   The active language is full-strength and underlined; the others are dimmed until hovered. */
+.lang-switcher {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.lang-option {
+    border: none;
+    padding: 0.15rem 0.1rem;
+    background: transparent;
+    color: var(--main-font-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.55;
+}
+
+.lang-option:hover {
+    opacity: 1;
+}
+
+.lang-option.is-active {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.lang-option:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
 }
 
 .search-container {
@@ -288,7 +321,7 @@ textarea {
    scales with the cropped viewBox. */
 .table-label {
     fill: var(--main-font-color);
-    font-family: Cormorant, serif;
+    font-family: Cormorant, "Noto Serif Tamil", serif;
     font-size: 14px;
     font-weight: 500;
 
