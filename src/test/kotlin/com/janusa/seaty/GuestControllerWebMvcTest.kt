@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Bean
-import org.springframework.http.MediaType
 import org.springframework.test.json.JsonCompareMode
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.web.context.WebApplicationContext
@@ -40,43 +39,39 @@ class GuestControllerWebMvcTest {
     }
 
     @Test
-    fun `valid name returns the matching guests as a json array`() {
-        every { guestRepository.findGuests("Ali") } returns listOf(Guest(1, "Alice", 1, 1))
+    fun `all guests are returned as a json array`() {
+        every { guestRepository.findAllGuests() } returns
+            listOf(Guest(7, "Alice", 7, 1), Guest(28, "Charlotte", 2, 4))
 
         client
             .get()
-            .uri("/api/guests?name=Ali")
+            .uri("/api/guests")
             .exchange()
             .expectStatus()
             .isOk()
             .expectBody()
             .json(
-                """[{"id":1,"name":"Alice","seatNumber":1,"tableNumber":1}]""",
+                """
+                [
+                  {"id":7,"name":"Alice","seatNumber":7,"tableNumber":1},
+                  {"id":28,"name":"Charlotte","seatNumber":2,"tableNumber":4}
+                ]
+                """.trimIndent(),
                 JsonCompareMode.LENIENT,
             )
     }
 
     @Test
-    fun `a single-character name is accepted`() {
-        every { guestRepository.findGuests("C") } returns listOf(Guest(1, "Chad", 3, 5))
+    fun `an empty guest list is returned as an empty array`() {
+        every { guestRepository.findAllGuests() } returns emptyList()
 
         client
             .get()
-            .uri("/api/guests?name=C")
+            .uri("/api/guests")
             .exchange()
             .expectStatus()
             .isOk()
-    }
-
-    @Test
-    fun `an empty name is rejected with a problem detail`() {
-        client
-            .get()
-            .uri("/api/guests?name=")
-            .exchange()
-            .expectStatus()
-            .isBadRequest()
-            .expectHeader()
-            .contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+            .expectBody()
+            .json("[]", JsonCompareMode.LENIENT)
     }
 }

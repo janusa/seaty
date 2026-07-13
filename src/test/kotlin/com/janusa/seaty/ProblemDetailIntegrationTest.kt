@@ -15,7 +15,7 @@ class ProblemDetailIntegrationTest : AbstractWebIntegrationTest() {
     fun `validation failure is a problem detail with the custom message`() {
         restClient
             .get()
-            .uri("/api/guests?name=")
+            .uri("/api/tables/0/guests")
             .exchange()
             .expectStatus()
             .isBadRequest()
@@ -31,14 +31,14 @@ class ProblemDetailIntegrationTest : AbstractWebIntegrationTest() {
             .value(String::class.java) { detail ->
                 assertThat(detail).contains("Invalid request parameters")
             }.jsonPath("$.instance")
-            .isEqualTo("/api/guests")
+            .isEqualTo("/api/tables/0/guests")
     }
 
     @Test
-    fun `missing required parameter is also a problem detail`() {
+    fun `a non-numeric path variable is also a problem detail`() {
         restClient
             .get()
-            .uri("/api/guests")
+            .uri("/api/tables/abc/guests")
             .exchange()
             .expectStatus()
             .isBadRequest()

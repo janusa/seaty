@@ -63,7 +63,7 @@ VALUES
        ('Holly'), -- guest id = 057
        ('Ian'), -- guest id = 058
        ('Imogen'), -- guest id = 059
-       ('Irene'), -- guest id = 060
+       ('Irène'), -- guest id = 060
        ('Isaac'), -- guest id = 061
        ('Ivy'), -- guest id = 062
        ('Jack'), -- guest id = 063
@@ -82,7 +82,7 @@ VALUES
        ('Lucas'), -- guest id = 076
        ('Lucy'), -- guest id = 077
        ('Marcus'), -- guest id = 078
-       ('Maria'), -- guest id = 079
+       ('María'), -- guest id = 079
        ('Martin'), -- guest id = 080
        ('Mason'), -- guest id = 081
        ('Megan'), -- guest id = 082
@@ -147,7 +147,7 @@ VALUES
        ('Yves'), -- guest id = 141
        ('Zachary'), -- guest id = 142
        ('Zara'), -- guest id = 143
-       ('Zoe'), -- guest id = 144
+       ('Zoë'), -- guest id = 144
        ('Zoltan'), -- guest id = 145
        ('Zuri'); -- guest id = 146
 
