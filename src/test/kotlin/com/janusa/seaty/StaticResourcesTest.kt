@@ -85,6 +85,18 @@ class StaticResourcesTest : AbstractWebIntegrationTest() {
     }
 
     @Test
+    fun `static resources are cacheable privately by the browser`() {
+        restClient
+            .get()
+            .uri("/scripts/script.js")
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .valueEquals("Cache-Control", "max-age=3600, private")
+    }
+
+    @Test
     fun `index page references a working script`() {
         val html =
             restClient
