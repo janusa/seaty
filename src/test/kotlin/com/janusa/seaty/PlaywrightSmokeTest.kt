@@ -234,6 +234,40 @@ class PlaywrightSmokeTest {
     }
 
     @Test
+    fun `the head table seat numbers stack above and below their chairs`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            // Guest 135 (Zara) sits at the rectangular head table (table 17): two straight rows of four.
+            page.navigate("$baseUrl/?name=Zara&guest=135")
+            page.waitForSelector(".seating-map-detail .seat-number-label")
+
+            // Each faint number sits straight over its chair (same x as a chair column) and clears the
+            // row vertically - above the top row or below the bottom row - rather than fanning out on a
+            // radial as it would on a round table. This is the defining property of the stacked layout.
+            val stacked =
+                page.evaluate(
+                    """
+                    () => {
+                        const detail = document.querySelector('.seating-map-detail svg');
+                        const chairs = [...detail.querySelectorAll('circle')];
+                        const columns = new Set(chairs.map((c) => Number(c.getAttribute('cx'))));
+                        const cys = chairs.map((c) => Number(c.getAttribute('cy')));
+                        const topRow = Math.min(...cys);
+                        const bottomRow = Math.max(...cys);
+                        const labels = [...detail.querySelectorAll('.seat-number-label')];
+                        return labels.every((label) => {
+                            const x = Number(label.getAttribute('x'));
+                            const y = Number(label.getAttribute('y'));
+                            return columns.has(x) && (y < topRow || y > bottomRow);
+                        });
+                    }
+                    """.trimIndent(),
+                )
+            assertThat(stacked as Boolean).isTrue()
+        }
+    }
+
+    @Test
     fun `the head table roster lists its eight guests`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()

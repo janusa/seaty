@@ -95,6 +95,15 @@ function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
     return { x: seatX + (dx / length) * distance, y: seatY + (dy / length) * distance };
 }
 
+// Where a seat's faint number sits on the rectangular head table's close-up: directly above the top
+// row and directly below the bottom row, keeping the number aligned over its chair. The radial rule
+// above suits a circle, but on a two-sided table it fans the corner numbers out at an angle; here the
+// side is chosen purely by whether the seat sits above or below the table centre.
+function stackedSeatNumberPosition(seatX, seatY, centerY, distance) {
+    const offset = seatY < centerY ? -distance : distance;
+    return { x: seatX, y: seatY + offset };
+}
+
 // Fold a name for comparison: strip accents and lowercase, so "José" and "jose" compare equal. Uses
 // the browser's own full-Unicode normalizer, no dependency. Pure, like the helpers above.
 function foldName(value) {
@@ -578,15 +587,19 @@ function labelSeatNumbers(tableClone) {
         centerY = Number(body.getAttribute("y")) + Number(body.getAttribute("height")) / 2;
     }
 
+    // The round tables seat guests all the way around, so their numbers read best pushed straight out
+    // along each radial. The head table is two straight rows, where a radial offset skews the corner
+    // numbers; stack them vertically instead (above the top row, below the bottom row). The shape
+    // class is the same signal labelTable keys off, since the data carries no table role.
+    const isHeadTable = tableClone.classList.contains("rectangular-table");
+
     for (const chair of tableClone.querySelectorAll('[id^="table-"]')) {
         const seatNumber = chair.id.split("-").pop();
-        const position = seatNumberPosition(
-            Number(chair.getAttribute("cx")),
-            Number(chair.getAttribute("cy")),
-            centerX,
-            centerY,
-            SEAT_LABEL_DISTANCE,
-        );
+        const seatX = Number(chair.getAttribute("cx"));
+        const seatY = Number(chair.getAttribute("cy"));
+        const position = isHeadTable
+            ? stackedSeatNumberPosition(seatX, seatY, centerY, SEAT_LABEL_DISTANCE)
+            : seatNumberPosition(seatX, seatY, centerX, centerY, SEAT_LABEL_DISTANCE);
 
         const label = document.createElementNS(SVG_NAMESPACE, "text");
         label.setAttribute("x", position.x);
