@@ -95,10 +95,12 @@ function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
     return { x: seatX + (dx / length) * distance, y: seatY + (dy / length) * distance };
 }
 
-// Where a seat's faint number sits on the rectangular head table's close-up: directly above the top
-// row and directly below the bottom row, keeping the number aligned over its chair. The radial rule
-// above suits a circle, but on a two-sided table it fans the corner numbers out at an angle; here the
-// side is chosen purely by whether the seat sits above or below the table centre.
+// Where a seat's faint number sits on the rectangular head table's close-up: straight out from the
+// row and aligned over its chair (x unchanged). Its chairs all sit along the bottom side, so every
+// number drops directly below its chair. The radial rule above would instead slide the end numbers
+// off sideways, because on a wide, shallow table the centre is nearly level with the row. The side
+// is chosen by whether the seat sits above or below the table centre, so this still holds if a chair
+// is ever placed on the far side.
 function stackedSeatNumberPosition(seatX, seatY, centerY, distance) {
     const offset = seatY < centerY ? -distance : distance;
     return { x: seatX, y: seatY + offset };
@@ -588,9 +590,9 @@ function labelSeatNumbers(tableClone) {
     }
 
     // The round tables seat guests all the way around, so their numbers read best pushed straight out
-    // along each radial. The head table is two straight rows, where a radial offset skews the corner
-    // numbers; stack them vertically instead (above the top row, below the bottom row). The shape
-    // class is the same signal labelTable keys off, since the data carries no table role.
+    // along each radial. The head table is a straight row of chairs, where a radial offset slides the
+    // end numbers off sideways; stack them vertically under their chairs instead. The shape class is
+    // the same signal labelTable keys off, since the data carries no table role.
     const isHeadTable = tableClone.classList.contains("rectangular-table");
 
     for (const chair of tableClone.querySelectorAll('[id^="table-"]')) {

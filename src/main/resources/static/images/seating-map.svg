@@ -211,16 +211,14 @@
 <circle cx="606" cy="195" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
 </g>
 
-<!-- Rectangular head table: 8 chairs, 4 along the top side and 4 along the bottom, facing the room -->
+<!-- Rectangular head table: 6 chairs along the bottom side only, facing the room -->
 <g class="rectangular-table" id="rectangular-table-17">
-<circle id="table-17-seat-1" cx="241" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-2" cx="261" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-3" cx="281" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-4" cx="301" cy="176" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-5" cx="241" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-6" cx="261" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-7" cx="281" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-8" cx="301" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-1" cx="236" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-2" cx="250" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-3" cx="264" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-4" cx="278" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-5" cx="292" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-6" cx="306" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
 <rect x="232" y="186" width="78" height="24" fill="#CFDECA" />
 </g>
 
