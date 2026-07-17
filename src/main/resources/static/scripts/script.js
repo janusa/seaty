@@ -58,7 +58,7 @@ function seatElementId(tableNumber, seatNumber) {
 
 // The head table carries a real number in the database (so it fits the same seat/table schema as
 // every other table), but it is only ever shown by name. This is that internal number.
-const HEAD_TABLE_NUMBER = 18;
+const HEAD_TABLE_NUMBER = 17;
 
 // How a table is named to guests: "Head Table" for the head table, otherwise "Table N". Kept
 // DOM-free so the same wording drives the list, the map caption, and the close-up label.

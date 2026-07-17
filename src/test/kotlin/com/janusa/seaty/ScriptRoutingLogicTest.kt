@@ -94,7 +94,7 @@ class ScriptRoutingLogicTest {
 
     @Test
     fun `tableLabel names the head table by name`() {
-        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("Head Table")
+        assertThat(fn("tableLabel").execute(17).asString()).isEqualTo("Head Table")
     }
 
     @Test
