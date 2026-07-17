@@ -22,7 +22,7 @@ class GuestListIntegrationTest : AbstractWebIntegrationTest() {
             .valueEquals("Cache-Control", "max-age=3600, private")
             .expectBody()
             .jsonPath("$.length()")
-            .isEqualTo(140)
+            .isEqualTo(138)
             .jsonPath("$[0].name")
             .isEqualTo("Aaron")
     }

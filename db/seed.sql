@@ -141,9 +141,7 @@ VALUES
        ('Zara'), -- guest id = 135
        ('Zoë'), -- guest id = 136
        ('Zoltan'), -- guest id = 137
-       ('Zuri'), -- guest id = 138
-       ('Zuzana'), -- guest id = 139
-       ('Zylah'); -- guest id = 140
+       ('Zuri'); -- guest id = 138
 
 -- 17 tables, matching the seating map. Table 17 is the head table (shown as "Head Table" in the UI).
 INSERT INTO dining_table (table_number)
@@ -167,7 +165,7 @@ VALUES (1),
 
 -- seat_number restarts at 1 for each table, matching the map's per-table chair ids
 -- (table-{table_number}-seat-{seat_number}). Chair counts match the map: 8 for a small
--- round table, 10 for a large round table, 8 for the rectangular head table (four per side).
+-- round table, 10 for a large round table, 6 for the rectangular head table (one side only).
 INSERT INTO seat(seat_number, table_id)
 VALUES
     -- table 1
@@ -324,12 +322,10 @@ VALUES
     (3, 17), -- seat id = 135
     (4, 17), -- seat id = 136
     (5, 17), -- seat id = 137
-    (6, 17), -- seat id = 138
-    (7, 17), -- seat id = 139
-    (8, 17); -- seat id = 140
+    (6, 17); -- seat id = 138
 
 -- Seat each guest in order: the k-th guest (by id) takes the k-th seat, walking the tables in order
--- and the seats within each table. Pairing by row position rather than transcribing 140 literal
+-- and the seats within each table. Pairing by row position rather than transcribing 138 literal
 -- (guest_id, seat_id) rows keeps the data correct even if the guest or seat rows above are
 -- reordered or renumbered.
 INSERT INTO seating_assignment (guest_id, seat_id)
