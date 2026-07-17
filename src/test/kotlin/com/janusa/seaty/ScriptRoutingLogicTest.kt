@@ -169,6 +169,19 @@ class ScriptRoutingLogicTest {
         assertThat(position.getMember("y").asDouble()).isEqualTo(89.0)
     }
 
+    @Test
+    fun `stackedSeatNumberPosition lifts a top-row seat straight up and drops a bottom-row seat straight down`() {
+        val stacked = fn("stackedSeatNumberPosition")
+        // Head-table centre y is 198; a top-row seat (y=176) gets its number 10 units above it...
+        val top = stacked.execute(241, 176, 198, 10)
+        assertThat(top.getMember("x").asDouble()).isEqualTo(241.0)
+        assertThat(top.getMember("y").asDouble()).isEqualTo(166.0)
+        // ...and a bottom-row seat (y=220) gets its number 10 units below, x unchanged in both cases.
+        val bottom = stacked.execute(241, 220, 198, 10)
+        assertThat(bottom.getMember("x").asDouble()).isEqualTo(241.0)
+        assertThat(bottom.getMember("y").asDouble()).isEqualTo(230.0)
+    }
+
     // Near-match search: the pure matching helpers (foldName, fuzzyPrefixDistance, guestMatchScore,
     // matchGuests) that back the client-side guest search. Passing plain objects and strings mirrors
     // how prepareRoster is exercised above.
