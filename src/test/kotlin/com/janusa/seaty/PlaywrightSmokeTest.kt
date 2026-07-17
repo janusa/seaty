@@ -186,8 +186,8 @@ class PlaywrightSmokeTest {
     fun `the head table close-up is labelled Head Table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            // Guest 143 (Zara) sits at the rectangular head table (table 18).
-            page.navigate("$baseUrl/?name=Zara&guest=143")
+            // Guest 135 (Zara) sits at the rectangular head table (table 17).
+            page.navigate("$baseUrl/?name=Zara&guest=135")
             page.waitForSelector(".seating-map-detail .table-label")
 
             val label = page.querySelector(".seating-map-detail .table-label")
@@ -234,12 +234,12 @@ class PlaywrightSmokeTest {
     }
 
     @Test
-    fun `the head table roster lists its six guests`() {
+    fun `the head table roster lists its eight guests`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Zara&guest=143")
+            page.navigate("$baseUrl/?name=Zara&guest=135")
             page.waitForSelector(".roster-list .roster-row")
-            assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(6)
+            assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(8)
         }
     }
 
