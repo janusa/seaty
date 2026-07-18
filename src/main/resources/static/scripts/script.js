@@ -31,9 +31,9 @@ const DEFAULT_LOCALE = "en";
 // The Tamil (ta) copy is a Jaffna (Sri Lankan) draft and needs review by a native speaker.
 const TRANSLATIONS = {
     en: {
-        "search.heading": "Guest Search",
-        "search.inputLabel": "Search for your name",
-        "search.placeholder": "Search for your name...",
+        "search.heading": "Welcome",
+        "search.inputLabel": "Your name",
+        "search.placeholder": "Your name...",
         "search.prompt": "Start typing to find your seat!",
         "search.noResults": "No guests found with this name.",
         "table.head": "Head Table",
@@ -45,7 +45,7 @@ const TRANSLATIONS = {
         "lang.label": "Language",
     },
     no: {
-        "search.heading": "Gjestesøk",
+        "search.heading": "Velkommen",
         "search.inputLabel": "Søk etter navnet ditt",
         "search.placeholder": "Søk etter navnet ditt...",
         "search.prompt": "Begynn å skrive for å finne plassen din!",
@@ -59,16 +59,16 @@ const TRANSLATIONS = {
         "lang.label": "Språk",
     },
     ta: {
-        "search.heading": "விருந்தினர் தேடல்",
-        "search.inputLabel": "உங்கள் பெயரைத் தேடுங்கள்",
-        "search.placeholder": "உங்கள் பெயரைத் தேடுங்கள்...",
-        "search.prompt": "உங்கள் இருக்கையைக் கண்டறிய தட்டச்சு செய்யத் தொடங்குங்கள்!",
-        "search.noResults": "இந்தப் பெயரில் விருந்தினர் யாரும் இல்லை.",
-        "table.head": "தலைமை மேசை",
+        "search.heading": "நல்வரவு",
+        "search.inputLabel": "உங்கள் பெயர்",
+        "search.placeholder": "உங்கள் பெயர்...",
+        "search.prompt": "உங்கள் இருக்கையைக் கண்டறிய உங்கள் பெயரை மேலே எழுதுங்கள்!",
+        "search.noResults": "இந்தப் பெயரில் எந்த விருந்தினரும் பதிவு செய்யப்படவில்லை.",
+        "table.head": "மணமக்கள் மேசை",
         "table.numbered": "மேசை {n}",
         "seat.label": "இருக்கை {n}",
         seatLine: "{table}, இருக்கை {n}",
-        "roster.heading": "உங்கள் மேசையில்",
+        "roster.heading": "உங்கள் மேசையில் இருப்பவர்கள்",
         "map.entrance": "நுழைவாயில்",
         "lang.label": "மொழி",
     },
@@ -143,7 +143,7 @@ const HEAD_TABLE_NUMBER = 18;
 function tableLabel(tableNumber) {
     return Number(tableNumber) === HEAD_TABLE_NUMBER
         ? translate("table.head")
-        : translate("table.numbered", { n: tableNumber });
+        : translate("table.numbered", {n: tableNumber});
 }
 
 // Order a table's guests for the roster: the selected guest's own row first, then everyone else by
