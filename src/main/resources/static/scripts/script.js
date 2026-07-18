@@ -16,6 +16,84 @@ let seatingMapSvg = null;
 let searchForm;
 let searchInput;
 let resultsContainer;
+let langButtons;
+
+// The interface language. Defaults to English so the pure helpers below (and the off-browser GraalJS
+// tests) resolve English without a browser; the bootstrap detects and applies the guest's language.
+let activeLocale = "en";
+
+const SUPPORTED_LOCALES = ["en", "no", "ta"];
+const DEFAULT_LOCALE = "en";
+
+// Every user-facing string, keyed by locale then by message key. Values are plain strings; a few
+// carry {n}/{table} placeholders so each language can order the whole line its own way. Missing
+// strings fall back to English, then to the key itself, so a gap is safe and visible rather than blank.
+// The Tamil (ta) copy is a Jaffna (Sri Lankan) draft and needs review by a native speaker.
+const TRANSLATIONS = {
+    en: {
+        "search.heading": "Welcome",
+        "search.inputLabel": "Your name",
+        "search.placeholder": "Your name...",
+        "search.prompt": "Start typing to find your seat!",
+        "search.noResults": "No guests found with this name.",
+        "table.head": "Head Table",
+        "table.numbered": "Table {n}",
+        "seat.label": "Seat {n}",
+        seatLine: "{table}, Seat {n}",
+        "roster.heading": "At your table",
+        "map.entrance": "Entrance",
+        "lang.label": "Language",
+    },
+    no: {
+        "search.heading": "Velkommen",
+        "search.inputLabel": "Søk etter navnet ditt",
+        "search.placeholder": "Søk etter navnet ditt...",
+        "search.prompt": "Begynn å skrive for å finne plassen din!",
+        "search.noResults": "Ingen gjester funnet med dette navnet.",
+        "table.head": "Hovedbord",
+        "table.numbered": "Bord {n}",
+        "seat.label": "Plass {n}",
+        seatLine: "{table}, plass {n}",
+        "roster.heading": "Ved bordet ditt",
+        "map.entrance": "Inngang",
+        "lang.label": "Språk",
+    },
+    ta: {
+        "search.heading": "நல்வரவு",
+        "search.inputLabel": "உங்கள் பெயர்",
+        "search.placeholder": "உங்கள் பெயர்...",
+        "search.prompt": "உங்கள் இருக்கையைக் கண்டறிய உங்கள் பெயரை மேலே எழுதுங்கள்!",
+        "search.noResults": "இந்தப் பெயரில் எந்த விருந்தினரும் பதிவு செய்யப்படவில்லை.",
+        "table.head": "மணமக்கள் மேசை",
+        "table.numbered": "மேசை {n}",
+        "seat.label": "இருக்கை {n}",
+        seatLine: "{table}, இருக்கை {n}",
+        "roster.heading": "உங்கள் மேசையில் இருப்பவர்கள்",
+        "map.entrance": "நுழைவாயில்",
+        "lang.label": "மொழி",
+    },
+};
+
+// Look up a message in the active language and fill any {name} placeholders from params. Falls back to
+// English, then to the key, so a missing translation degrades gracefully. Pure and DOM-free.
+function translate(key, params) {
+    const table = TRANSLATIONS[activeLocale] ?? TRANSLATIONS[DEFAULT_LOCALE];
+    const template = table[key] ?? TRANSLATIONS[DEFAULT_LOCALE][key] ?? key;
+    if (!params) {
+        return template;
+    }
+    return template.replace(/\{(\w+)\}/g, (match, name) =>
+        name in params ? String(params[name]) : match,
+    );
+}
+
+// Switch the active language, ignoring anything we don't support (so the English default stands).
+// Pure: persistence and re-rendering are the DOM layer's job, which keeps this testable off-browser.
+function setActiveLocale(locale) {
+    if (SUPPORTED_LOCALES.includes(locale)) {
+        activeLocale = locale;
+    }
+}
 
 // Compute the history query string for a state change, or return null when the state is unchanged (so
 // an identical entry isn't pushed). Pure: it takes the current query string rather than reading
@@ -60,10 +138,12 @@ function seatElementId(tableNumber, seatNumber) {
 // every other table), but it is only ever shown by name. This is that internal number.
 const HEAD_TABLE_NUMBER = 17;
 
-// How a table is named to guests: "Head Table" for the head table, otherwise "Table N". Kept
-// DOM-free so the same wording drives the list, the map caption, and the close-up label.
+// How a table is named to guests: the head table by name, otherwise "Table N" in the active language.
+// Kept DOM-free so the same wording drives the list, the map caption, and the close-up label.
 function tableLabel(tableNumber) {
-    return Number(tableNumber) === HEAD_TABLE_NUMBER ? "Head Table" : `Table ${tableNumber}`;
+    return Number(tableNumber) === HEAD_TABLE_NUMBER
+        ? translate("table.head")
+        : translate("table.numbered", { n: tableNumber });
 }
 
 // Order a table's guests for the roster: the selected guest's own row first, then everyone else by
@@ -240,7 +320,7 @@ async function searchGuests(value) {
     const query = value.trim();
 
     if (query.length === 0) {
-        showMessage("Start typing to find your seat!");
+        showMessage(translate("search.prompt"));
         return;
     }
 
@@ -257,7 +337,7 @@ async function searchGuests(value) {
 
 function renderGuests(guests) {
     if (guests.length === 0) {
-        showMessage("No guests found with this name.");
+        showMessage(translate("search.noResults"));
         return;
     }
 
@@ -284,7 +364,10 @@ function renderList(guests) {
         name.textContent = guest.name;
 
         const seat = document.createElement("p");
-        seat.textContent = `${tableLabel(guest.tableNumber)}, Seat ${guest.seatNumber}`;
+        seat.textContent = translate("seatLine", {
+            table: tableLabel(guest.tableNumber),
+            n: guest.seatNumber,
+        });
 
         item.append(name, seat);
 
@@ -360,7 +443,7 @@ function renderRoster(guests, guest) {
 
     const heading = document.createElement("h3");
     heading.className = "roster-heading";
-    heading.textContent = "At your table";
+    heading.textContent = translate("roster.heading");
 
     const list = document.createElement("ul");
     list.className = "search-results-list roster-list";
@@ -375,7 +458,7 @@ function renderRoster(guests, guest) {
 
         const seat = document.createElement("p");
         seat.className = "roster-seat";
-        seat.textContent = `Seat ${row.seatNumber}`;
+        seat.textContent = translate("seat.label", { n: row.seatNumber });
 
         item.append(name, seat);
         list.append(item);
@@ -436,7 +519,10 @@ async function renderSeatingMap(guest) {
 
     const seat = document.createElement("p");
     seat.className = "seating-map-seat";
-    seat.textContent = `${tableLabel(guest.tableNumber)}, Seat ${guest.seatNumber}`;
+    seat.textContent = translate("seatLine", {
+        table: tableLabel(guest.tableNumber),
+        n: guest.seatNumber,
+    });
 
     caption.append(name, seat);
 
@@ -449,6 +535,14 @@ async function renderSeatingMap(guest) {
     svg.removeAttribute("width");
     svg.removeAttribute("height");
     svg.setAttribute("aria-hidden", "true");
+
+    // Translate the room's baked-in "Entrance" label. Found by class, not by its English text, so it
+    // keeps working in any language; a language switch re-renders the map and re-applies this.
+    const entrance = svg.querySelector(".entrance-label");
+    if (entrance) {
+        entrance.textContent = translate("map.entrance");
+    }
+
     map.append(svg);
 
     const chair = svg.querySelector(`#${seatElementId(guest.tableNumber, guest.seatNumber)}`);
@@ -560,7 +654,7 @@ function labelTable(tableClone, tableNumber) {
     // `central` aligns the text's centre on the y coordinate, so the label sits at the table's centre.
     label.setAttribute("dominant-baseline", "central");
     label.classList.add("table-label");
-    label.textContent = isHeadTable ? "Head Table" : String(tableNumber);
+    label.textContent = isHeadTable ? translate("table.head") : String(tableNumber);
 
     if (isHeadTable) {
         label.classList.add("head-table-label");
@@ -615,6 +709,92 @@ function labelSeatNumbers(tableClone) {
     }
 }
 
+// Where the guest's chosen language is remembered across visits.
+const LOCALE_STORAGE_KEY = "seaty.locale";
+
+// Browser language tags mapped to a supported locale. Norwegian browsers usually report a Bokmål (nb)
+// or Nynorsk (nn) tag rather than the macrolanguage "no".
+const LOCALE_ALIASES = {
+    en: "en",
+    no: "no",
+    nb: "no",
+    nn: "no",
+    ta: "ta",
+};
+
+// Resolve the starting language: a saved explicit choice wins, then the browser's own preferences (in
+// priority order) if any maps to a supported locale, otherwise English. Only called from the bootstrap,
+// so it may touch localStorage and navigator (the pure helpers above must not).
+function detectLocale() {
+    try {
+        const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+        if (stored && SUPPORTED_LOCALES.includes(stored)) {
+            return stored;
+        }
+    } catch {
+        // localStorage can throw (e.g. Safari private mode); fall through to the browser languages.
+    }
+
+    const preferences = navigator.languages ?? [navigator.language];
+    for (const tag of preferences) {
+        const primary = (tag ?? "").split("-")[0].toLowerCase();
+        const mapped = LOCALE_ALIASES[primary];
+        if (mapped) {
+            return mapped;
+        }
+    }
+
+    return DEFAULT_LOCALE;
+}
+
+// Paint the static chrome in the active language: the <html lang>, every [data-i18n] element's text,
+// every [data-i18n-attr] element's listed attributes, and the selector's own value.
+function applyStaticTranslations() {
+    document.documentElement.lang = activeLocale;
+
+    for (const element of document.querySelectorAll("[data-i18n]")) {
+        element.textContent = translate(element.dataset.i18n);
+    }
+
+    for (const element of document.querySelectorAll("[data-i18n-attr]")) {
+        // Each entry is "attribute:key", separated by ";" (e.g. an input's aria-label and placeholder).
+        for (const pair of element.dataset.i18nAttr.split(";")) {
+            const [attribute, key] = pair.split(":");
+            if (attribute && key) {
+                element.setAttribute(attribute.trim(), translate(key.trim()));
+            }
+        }
+    }
+
+    if (langButtons) {
+        for (const button of langButtons) {
+            const isActive = button.dataset.lang === activeLocale;
+            button.setAttribute("aria-pressed", String(isActive));
+            button.classList.toggle("is-active", isActive);
+        }
+    }
+}
+
+// Rebuild the dynamic view (list/map/message) in the active language. The dedup guard must be cleared
+// first: its keys are id-based and language-independent, so otherwise isAlreadyRendered would skip the
+// rebuild. renderFromUrl re-derives the view from the URL, so it also covers the empty prompt state.
+function refreshView() {
+    renderedKey = null;
+    renderFromUrl();
+}
+
+// Switch language from the selector: remember the choice (best-effort), then repaint chrome and view.
+function applyLocale(locale) {
+    setActiveLocale(locale);
+    try {
+        localStorage.setItem(LOCALE_STORAGE_KEY, activeLocale);
+    } catch {
+        // Persisting is best-effort; ignore storage failures (e.g. Safari private mode).
+    }
+    applyStaticTranslations();
+    refreshView();
+}
+
 function showMessage(text) {
     if (isAlreadyRendered(`message:${text}`)) {
         return;
@@ -645,6 +825,11 @@ if (typeof document !== "undefined") {
     searchForm = document.querySelector("form[role='search']");
     searchInput = document.querySelector("#guest-search");
     resultsContainer = document.querySelector("#search-result-container");
+    langButtons = document.querySelectorAll("#lang-switcher [data-lang]");
+
+    // Paint the interface in the guest's language before anything else renders.
+    setActiveLocale(detectLocale());
+    applyStaticTranslations();
 
     // Warm the in-memory guest list right away so the first keystroke matches with no network wait.
     loadAllGuests();
@@ -660,6 +845,13 @@ if (typeof document !== "undefined") {
         event.preventDefault();
         commitSearch(searchInput.value);
     });
+
+    // Switch language when the guest picks one: persist it, repaint the chrome, and re-render the view.
+    for (const button of langButtons) {
+        button.addEventListener("click", () => {
+            applyLocale(button.dataset.lang);
+        });
+    }
 
     // Back/forward navigates between past states: re-sync the input and results from the URL,
     // without pushing a new entry (this navigation *is* the history change).

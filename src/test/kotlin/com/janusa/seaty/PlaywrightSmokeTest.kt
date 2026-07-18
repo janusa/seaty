@@ -31,6 +31,9 @@ class PlaywrightSmokeTest {
     private fun newAuthenticatedContext(
         options: Browser.NewContextOptions = Browser.NewContextOptions(),
     ): BrowserContext {
+        // Pin the browser locale so detectLocale() resolves to English (no stored preference in a
+        // fresh context), keeping the text-based assertions deterministic regardless of the host locale.
+        options.setLocale("en-US")
         val context = browser.newContext(options)
         context.setDefaultTimeout(DEFAULT_TIMEOUT_MS)
         context.addCookies(listOf(Cookie("session", TestDatabase.TEST_SECRET).setUrl(baseUrl)))
@@ -284,6 +287,42 @@ class PlaywrightSmokeTest {
             page.navigate("$baseUrl/?name=Bobby&guest=14")
             page.waitForSelector(".roster-list .roster-row")
             assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(10)
+        }
+    }
+
+    @Test
+    fun `switching language translates the interface and persists across a reload`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            page.navigate("$baseUrl/")
+            // Defaults to English (the pinned browser locale, no stored preference).
+            page.waitForSelector("text=Start typing to find your seat!")
+
+            // Switch to Norwegian: the heading, prompt, placeholder, and <html lang> all translate.
+            page.click("[data-lang='no']")
+            page.waitForSelector("text=Begynn å skrive for å finne plassen din!")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Velkommen")
+            assertThat(page.getAttribute("html", "lang")).isEqualTo("no")
+            assertThat(page.getAttribute("#guest-search", "placeholder"))
+                .isEqualTo("Søk etter navnet ditt...")
+            // The chosen option is marked active for assistive tech and styling.
+            assertThat(page.getAttribute("[data-lang='no']", "aria-pressed")).isEqualTo("true")
+            assertThat(page.getAttribute("[data-lang='en']", "aria-pressed")).isEqualTo("false")
+
+            // A search now renders the seat line with the Norwegian word for "seat".
+            page.fill("#guest-search", "Cha")
+            page.waitForSelector("li.search-result")
+            assertThat(page.querySelector("li.search-result p")?.textContent()).contains("plass")
+
+            // The choice survives a reload (persisted in localStorage).
+            page.reload()
+            assertThat(page.getAttribute("html", "lang")).isEqualTo("no")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Velkommen")
+
+            // Switching again re-renders live: Tamil heading and <html lang>.
+            page.click("[data-lang='ta']")
+            assertThat(page.getAttribute("html", "lang")).isEqualTo("ta")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("நல்வரவு")
         }
     }
 
