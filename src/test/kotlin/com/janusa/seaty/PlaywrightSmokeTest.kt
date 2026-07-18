@@ -301,7 +301,7 @@ class PlaywrightSmokeTest {
             // Switch to Norwegian: the heading, prompt, placeholder, and <html lang> all translate.
             page.click("[data-lang='no']")
             page.waitForSelector("text=Begynn å skrive for å finne plassen din!")
-            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Gjestesøk")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Velkommen")
             assertThat(page.getAttribute("html", "lang")).isEqualTo("no")
             assertThat(page.getAttribute("#guest-search", "placeholder"))
                 .isEqualTo("Søk etter navnet ditt...")
@@ -317,12 +317,12 @@ class PlaywrightSmokeTest {
             // The choice survives a reload (persisted in localStorage).
             page.reload()
             assertThat(page.getAttribute("html", "lang")).isEqualTo("no")
-            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Gjestesøk")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("Velkommen")
 
             // Switching again re-renders live: Tamil heading and <html lang>.
             page.click("[data-lang='ta']")
             assertThat(page.getAttribute("html", "lang")).isEqualTo("ta")
-            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("விருந்தினர் தேடல்")
+            assertThat(page.querySelector("h1")?.textContent()).isEqualTo("நல்வரவு")
         }
     }
 

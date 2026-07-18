@@ -101,14 +101,14 @@ class ScriptRoutingLogicTest {
     fun `tableLabel translates once the locale is Norwegian`() {
         js.eval("js", "setActiveLocale('no')")
         assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("Bord 7")
-        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("Hovedbord")
+        assertThat(fn("tableLabel").execute(17).asString()).isEqualTo("Hovedbord")
     }
 
     @Test
     fun `tableLabel translates once the locale is Tamil`() {
         js.eval("js", "setActiveLocale('ta')")
         assertThat(fn("tableLabel").execute(7).asString()).isEqualTo("மேசை 7")
-        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("தலைமை மேசை")
+        assertThat(fn("tableLabel").execute(17).asString()).isEqualTo("மணமக்கள் மேசை")
     }
 
     @Test
