@@ -143,7 +143,7 @@ const HEAD_TABLE_NUMBER = 17;
 function tableLabel(tableNumber) {
     return Number(tableNumber) === HEAD_TABLE_NUMBER
         ? translate("table.head")
-        : translate("table.numbered", {n: tableNumber});
+        : translate("table.numbered", { n: tableNumber });
 }
 
 // Order a table's guests for the roster: the selected guest's own row first, then everyone else by
