@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="730" height="302" viewBox="0 0 730 302">
+<svg xmlns="http://www.w3.org/2000/svg" width="651" height="302" viewBox="0 0 651 302">
 <rect width="100%" height="100%" fill="#F8F6F1" />
 
 <!-- Room outline -->
 
-<path d="M 2,80 H 493 V 30 H 649 V 80 H 728 V 298 H 491 V 272 L 456,244 H 2 Z" fill="none" stroke="#5D6D56" stroke-width="4" stroke-linejoin="miter"/>
+<path d="M 2,80 H 493 V 30 H 649 V 80 298 H 491 V 272 L 456,244 H 2 Z" fill="none" stroke="#5D6D56" stroke-width="4" stroke-linejoin="miter"/>
 
 <!-- Wall details -->
 <rect x="0" y="88" width="4" height="152" fill="#E5EBE1" />
@@ -18,7 +18,6 @@
 <rect x="612" y="28" width="33" height="4" fill="#E5EBE1"/>
 <rect x="647" y="40" width="4" height="28" fill="#E5EBE1"/>
 <rect x="491" y="40" width="4" height="28" fill="#E5EBE1"/>
-<rect x="653" y="78" width="75" height="4" fill="#E5EBE1"/>
 
 <!-- Columns / blocked areas -->
 <rect x="204" y="226" width="15" height="17" fill="#5D6D56"/>
@@ -128,17 +127,6 @@
 <circle id="table-16-seat-8" cx="590.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
 <circle cx="606" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
 </g>
-<g class="round-table" id="top-round-table-17">
-<circle id="table-17-seat-1" cx="678" cy="100" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-2" cx="693.6" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-3" cx="700" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-4" cx="693.6" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-5" cx="678" cy="144" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-6" cx="662.4" cy="137.6" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-7" cx="656" cy="122" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-17-seat-8" cx="662.4" cy="106.4" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle cx="678" cy="122" r="14" fill="#CFDECA" stroke="none" stroke-width="0" />
-</g>
 
 <!-- Bottom row: small round tables have 8 chairs; large round tables have 10 chairs -->
 <g class="round-table" id="bottom-large-round-table-2">
@@ -224,18 +212,21 @@
 </g>
 
 <!-- Rectangular head table: 6 chairs along the bottom side only, facing the room -->
-<g class="rectangular-table" id="rectangular-table-18">
-<circle id="table-18-seat-1" cx="236" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-18-seat-2" cx="250" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-18-seat-3" cx="264" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-18-seat-4" cx="278" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-18-seat-5" cx="292" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
-<circle id="table-18-seat-6" cx="306" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<g class="rectangular-table" id="rectangular-table-17">
+<circle id="table-17-seat-1" cx="236" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-2" cx="250" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-3" cx="264" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-4" cx="278" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-5" cx="292" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
+<circle id="table-17-seat-6" cx="306" cy="220" r="5" fill="#CFDECA" stroke="none" stroke-width="0" />
 <rect x="232" y="186" width="78" height="24" fill="#CFDECA" />
 </g>
 
 <!-- Removed marked wall segments on the lower-right side -->
 <line x1="490.95181" y1="298" x2="647.04822" y2="298" stroke="#F8F6F1" stroke-width="8" stroke-linecap="square" />
+
+<!-- Removed only the marked vertical wall segment on the right-hand side -->
+<line x1="649" y1="84" x2="649" y2="240" stroke="#F8F6F1" stroke-width="8" stroke-linecap="square" />
 
 <!-- Reception notice in the bottom-right alcove -->
 <text x="570" y="275" class="entrance-label" fill="#5D6D56" font-family="sans-serif" font-size="14" font-style="italic" text-anchor="middle" dominant-baseline="middle">Entrance</text>

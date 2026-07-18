@@ -94,7 +94,7 @@ class ScriptRoutingLogicTest {
 
     @Test
     fun `tableLabel names the head table by name`() {
-        assertThat(fn("tableLabel").execute(18).asString()).isEqualTo("Head Table")
+        assertThat(fn("tableLabel").execute(17).asString()).isEqualTo("Head Table")
     }
 
     @Test
@@ -199,6 +199,21 @@ class ScriptRoutingLogicTest {
         val position = fn("seatNumberPosition").execute(30, 100, 30, 122, 11)
         assertThat(position.getMember("x").asDouble()).isEqualTo(30.0)
         assertThat(position.getMember("y").asDouble()).isEqualTo(89.0)
+    }
+
+    @Test
+    fun `stackedSeatNumberPosition drops a bottom-row seat straight down, x unchanged`() {
+        val stacked = fn("stackedSeatNumberPosition")
+        // The head table's chairs sit below the table body (centre y 198), so each number drops straight
+        // down by the distance, its x left over the chair...
+        val below = stacked.execute(241, 220, 198, 10)
+        assertThat(below.getMember("x").asDouble()).isEqualTo(241.0)
+        assertThat(below.getMember("y").asDouble()).isEqualTo(230.0)
+        // ...and the same rule lifts a seat above the centre straight up, so it still holds if a chair
+        // is ever placed on the far side.
+        val above = stacked.execute(241, 176, 198, 10)
+        assertThat(above.getMember("x").asDouble()).isEqualTo(241.0)
+        assertThat(above.getMember("y").asDouble()).isEqualTo(166.0)
     }
 
     // Near-match search: the pure matching helpers (foldName, fuzzyPrefixDistance, guestMatchScore,

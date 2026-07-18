@@ -136,7 +136,7 @@ function seatElementId(tableNumber, seatNumber) {
 
 // The head table carries a real number in the database (so it fits the same seat/table schema as
 // every other table), but it is only ever shown by name. This is that internal number.
-const HEAD_TABLE_NUMBER = 18;
+const HEAD_TABLE_NUMBER = 17;
 
 // How a table is named to guests: the head table by name, otherwise "Table N" in the active language.
 // Kept DOM-free so the same wording drives the list, the map caption, and the close-up label.
@@ -173,6 +173,17 @@ function seatNumberPosition(seatX, seatY, centerX, centerY, distance) {
     const dy = seatY - centerY;
     const length = Math.hypot(dx, dy) || 1;
     return { x: seatX + (dx / length) * distance, y: seatY + (dy / length) * distance };
+}
+
+// Where a seat's faint number sits on the rectangular head table's close-up: straight out from the
+// row and aligned over its chair (x unchanged). Its chairs all sit along the bottom side, so every
+// number drops directly below its chair. The radial rule above would instead slide the end numbers
+// off sideways, because on a wide, shallow table the centre is nearly level with the row. The side
+// is chosen by whether the seat sits above or below the table centre, so this still holds if a chair
+// is ever placed on the far side.
+function stackedSeatNumberPosition(seatX, seatY, centerY, distance) {
+    const offset = seatY < centerY ? -distance : distance;
+    return { x: seatX, y: seatY + offset };
 }
 
 // Fold a name for comparison: strip accents and lowercase, so "José" and "jose" compare equal. Uses
@@ -672,15 +683,19 @@ function labelSeatNumbers(tableClone) {
         centerY = Number(body.getAttribute("y")) + Number(body.getAttribute("height")) / 2;
     }
 
+    // The round tables seat guests all the way around, so their numbers read best pushed straight out
+    // along each radial. The head table is a straight row of chairs, where a radial offset slides the
+    // end numbers off sideways; stack them vertically under their chairs instead. The shape class is
+    // the same signal labelTable keys off, since the data carries no table role.
+    const isHeadTable = tableClone.classList.contains("rectangular-table");
+
     for (const chair of tableClone.querySelectorAll('[id^="table-"]')) {
         const seatNumber = chair.id.split("-").pop();
-        const position = seatNumberPosition(
-            Number(chair.getAttribute("cx")),
-            Number(chair.getAttribute("cy")),
-            centerX,
-            centerY,
-            SEAT_LABEL_DISTANCE,
-        );
+        const seatX = Number(chair.getAttribute("cx"));
+        const seatY = Number(chair.getAttribute("cy"));
+        const position = isHeadTable
+            ? stackedSeatNumberPosition(seatX, seatY, centerY, SEAT_LABEL_DISTANCE)
+            : seatNumberPosition(seatX, seatY, centerX, centerY, SEAT_LABEL_DISTANCE);
 
         const label = document.createElementNS(SVG_NAMESPACE, "text");
         label.setAttribute("x", position.x);

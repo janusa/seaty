@@ -189,8 +189,8 @@ class PlaywrightSmokeTest {
     fun `the head table close-up is labelled Head Table`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            // Guest 143 (Zara) sits at the rectangular head table (table 18).
-            page.navigate("$baseUrl/?name=Zara&guest=143")
+            // Guest 135 (Zara) sits at the rectangular head table (table 17).
+            page.navigate("$baseUrl/?name=Zara&guest=135")
             page.waitForSelector(".seating-map-detail .table-label")
 
             val label = page.querySelector(".seating-map-detail .table-label")
@@ -237,10 +237,42 @@ class PlaywrightSmokeTest {
     }
 
     @Test
+    fun `the head table seat numbers sit straight below their chairs`() {
+        newAuthenticatedContext().use { context ->
+            val page = context.newPage()
+            // Guest 135 (Zara) sits at the rectangular head table (table 17): one row of chairs along the bottom.
+            page.navigate("$baseUrl/?name=Zara&guest=135")
+            page.waitForSelector(".seating-map-detail .seat-number-label")
+
+            // Each faint number sits straight over its chair (same x as a chair column) and drops clear
+            // below the row, rather than sliding off sideways on a radial as it would on a round table.
+            // This is the defining property of the stacked layout.
+            val stacked =
+                page.evaluate(
+                    """
+                    () => {
+                        const detail = document.querySelector('.seating-map-detail svg');
+                        const chairs = [...detail.querySelectorAll('circle')];
+                        const columns = new Set(chairs.map((c) => Number(c.getAttribute('cx'))));
+                        const bottomRow = Math.max(...chairs.map((c) => Number(c.getAttribute('cy'))));
+                        const labels = [...detail.querySelectorAll('.seat-number-label')];
+                        return labels.every((label) => {
+                            const x = Number(label.getAttribute('x'));
+                            const y = Number(label.getAttribute('y'));
+                            return columns.has(x) && y > bottomRow;
+                        });
+                    }
+                    """.trimIndent(),
+                )
+            assertThat(stacked as Boolean).isTrue()
+        }
+    }
+
+    @Test
     fun `the head table roster lists its six guests`() {
         newAuthenticatedContext().use { context ->
             val page = context.newPage()
-            page.navigate("$baseUrl/?name=Zara&guest=143")
+            page.navigate("$baseUrl/?name=Zara&guest=135")
             page.waitForSelector(".roster-list .roster-row")
             assertThat(page.querySelectorAll(".roster-list .roster-row")).hasSize(6)
         }

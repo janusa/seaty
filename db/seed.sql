@@ -136,22 +136,14 @@ VALUES
        ('Wendy'), -- guest id = 130
        ('William'), -- guest id = 131
        ('Xander'), -- guest id = 132
-       ('Xavier'), -- guest id = 133
-       ('Xena'), -- guest id = 134
-       ('Ximena'), -- guest id = 135
-       ('Xiomara'), -- guest id = 136
-       ('Yasmin'), -- guest id = 137
-       ('Yolanda'), -- guest id = 138
-       ('York'), -- guest id = 139
-       ('Yusuf'), -- guest id = 140
-       ('Yves'), -- guest id = 141
-       ('Zachary'), -- guest id = 142
-       ('Zara'), -- guest id = 143
-       ('Zoë'), -- guest id = 144
-       ('Zoltan'), -- guest id = 145
-       ('Zuri'); -- guest id = 146
+       ('Yves'), -- guest id = 133
+       ('Zachary'), -- guest id = 134
+       ('Zara'), -- guest id = 135
+       ('Zoë'), -- guest id = 136
+       ('Zoltan'), -- guest id = 137
+       ('Zuri'); -- guest id = 138
 
--- 18 tables, matching the seating map. Table 18 is the head table (shown as "Head Table" in the UI).
+-- 17 tables, matching the seating map. Table 17 is the head table (shown as "Head Table" in the UI).
 INSERT INTO dining_table (table_number)
 VALUES (1),
        (2),
@@ -169,8 +161,7 @@ VALUES (1),
        (14),
        (15),
        (16),
-       (17),
-       (18);
+       (17);
 
 -- seat_number restarts at 1 for each table, matching the map's per-table chair ids
 -- (table-{table_number}-seat-{seat_number}). Chair counts match the map: 8 for a small
@@ -325,25 +316,16 @@ VALUES
     (6, 16), -- seat id = 130
     (7, 16), -- seat id = 131
     (8, 16), -- seat id = 132
-    -- table 17
+    -- table 17 (rectangular head table)
     (1, 17), -- seat id = 133
     (2, 17), -- seat id = 134
     (3, 17), -- seat id = 135
     (4, 17), -- seat id = 136
     (5, 17), -- seat id = 137
-    (6, 17), -- seat id = 138
-    (7, 17), -- seat id = 139
-    (8, 17), -- seat id = 140
-    -- table 18 (rectangular head table)
-    (1, 18), -- seat id = 141
-    (2, 18), -- seat id = 142
-    (3, 18), -- seat id = 143
-    (4, 18), -- seat id = 144
-    (5, 18), -- seat id = 145
-    (6, 18); -- seat id = 146
+    (6, 17); -- seat id = 138
 
 -- Seat each guest in order: the k-th guest (by id) takes the k-th seat, walking the tables in order
--- and the seats within each table. Pairing by row position rather than transcribing 146 literal
+-- and the seats within each table. Pairing by row position rather than transcribing 138 literal
 -- (guest_id, seat_id) rows keeps the data correct even if the guest or seat rows above are
 -- reordered or renumbered.
 INSERT INTO seating_assignment (guest_id, seat_id)

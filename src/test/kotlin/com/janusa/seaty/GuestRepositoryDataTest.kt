@@ -15,7 +15,7 @@ class GuestRepositoryDataTest : AbstractDatabaseTest() {
     @Test
     fun `findAllGuests returns every seated guest ordered by name`() {
         val guests = guestRepository.findAllGuests()
-        assertThat(guests).hasSize(146)
+        assertThat(guests).hasSize(138)
         assertThat(guests.map { it.name }).isSorted()
         assertThat(guests.first().name).isEqualTo("Aaron")
     }
