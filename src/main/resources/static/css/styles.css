@@ -155,6 +155,10 @@ textarea {
     max-width: 16ch;
     margin: 0;
     align-self: center;
+
+    /* A single long word (a Tamil string, or an unusually long name) is wider than the box and has no
+       space to wrap at, so let it break between characters rather than spill past the edge. */
+    overflow-wrap: break-word;
 }
 
 .search-results-list {
@@ -420,6 +424,24 @@ textarea {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Tamil strings run longer than the English and Norwegian copy and Noto Serif Tamil sets a heavier line,
+   so at phone widths the translated interface copy wraps and reads oversized. Ease it down a step there.
+   Scoped to :lang(ta) (the bootstrap sets <html lang="ta">) and to the translated chrome only; guest names,
+   which may be in any script, keep their size. */
+@media (max-width: 480px) {
+    html:lang(ta) .search-result-container {
+        font-size: 1.5rem;
+    }
+
+    html:lang(ta) .seating-map-seat {
+        font-size: clamp(0.95rem, 3.6vw, 1.35rem);
+    }
+
+    html:lang(ta) .roster-heading {
+        font-size: 1rem;
     }
 }
 
